@@ -1,0 +1,10 @@
+main: me.Chestsort.main.ChestSort
+name: ChestSort
+author: CJM
+version: 1.0
+api-version: 1.13
+description: Sort Chests by Type
+commands:
+   SC:
+      usage: /<SC> [command]
+      description: Main command
