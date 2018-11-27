@@ -66,7 +66,7 @@ public class ChestGroupsData {
 		// For each group
 		for (String group : groupNames) {
 			List<String> newMaterialList = groupsFileConfig.getStringList("Groups." + group);
-			for(int i = 0; i < newMaterialList.size(); i++) {
+			for (int i = 0; i < newMaterialList.size(); i++) {
 				try {
 					Material.valueOf(newMaterialList.get(i));
 				} catch (IllegalArgumentException e) {
@@ -76,6 +76,10 @@ public class ChestGroupsData {
 			}
 			groups.put(group, newMaterialList);
 		}
+	}
+
+	public boolean isValidGroup(String groupName) {
+		return (groups.get(groupName) != null ? true : false);
 	}
 
 	public FileConfiguration getGroups() {
@@ -115,7 +119,7 @@ public class ChestGroupsData {
 			}
 		}
 	}
-	
+
 	public void addToGroup(String groupName, Material material) {
 		addToGroup(groupName, material.toString());
 	}

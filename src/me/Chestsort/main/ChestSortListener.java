@@ -1,6 +1,7 @@
 package me.Chestsort.main;
 
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.SignChangeEvent;
@@ -12,9 +13,13 @@ import net.md_5.bungee.api.ChatColor;
 public class ChestSortListener implements Listener {
 
 	ChestSort plugin;
+	NetworkData networkData;
+	ChestGroupsData groupsData;
 
-	public ChestSortListener(ChestSort plugin) {
+	public ChestSortListener(ChestSort plugin, NetworkData networkData, ChestGroupsData groupsData) {
 		this.plugin = plugin;
+		this.networkData = networkData;
+		this.groupsData = groupsData;
 	}
 
 	@EventHandler
@@ -30,29 +35,48 @@ public class ChestSortListener implements Listener {
 
 		Player player = e.getPlayer();
 
-		String newNetworkName = e.getLine(0).substring(1);
+		String tempNetworkName = e.getLine(0).substring(1);
 
 		// If deposit chest
 		if (e.getLine(1).equals("")) {
 			// If network doesn't exist
-			if (plugin.networks.get(newNetworkName) == null) {
-				plugin.createNewNetwork(player, newNetworkName);
-				player.sendMessage("Network " + newNetworkName + " created");
+			if (networkData.getNetworks().get(tempNetworkName) == null) {
+				networkData.createNewNetwork(player, tempNetworkName);
+				player.sendMessage("Network " + tempNetworkName + " created");
 			} else {
 				plugin.debugMessage("Network already exists");
 			}
 
 			e.setLine(1, ChatColor.GRAY + "Open Chest");
 			e.setLine(2, ChatColor.GRAY + "To Deposit");
-			Network newNetwork = plugin.networks.get(newNetworkName);
+			Network newNetwork = networkData.networks.get(tempNetworkName);
 			newNetwork.addDepositChest(newNetwork, e.getBlock().getLocation().add(0, -1, 0).getBlock(), e.getBlock());
 			plugin.networkdata.saveNetwork(newNetwork);
-		} else {
-			
 		}
+		// Sort Chest
+		else {
+			if (!networkData.networkExists(tempNetworkName)) {
+				player.sendMessage(ChatColor.RED + "No network named \"" + tempNetworkName
+						+ "\" (Networks names are case sensitive)");
+				return;
+			}
 
-		plugin.debugMessage(plugin.networks.get(newNetworkName).depositChests.size() + " DC");
+			String groupName = e.getLine(1);
+			if (!groupsData.isValidGroup(groupName)) {
+				player.sendMessage(
+						ChatColor.RED + "No group named \"" + groupName + "\" (Group names are case sensitive)");
+				return;
+			}
 
+			Block chest = e.getBlock().getLocation().add(0, -1, 0).getBlock();
+			Block sign = e.getBlock();
+			
+			networkData.networks.get(tempNetworkName).addSortChest(chest, sign, groupName, 2);
+			networkData.saveNetwork(networkData.networks.get(tempNetworkName));
+			plugin.debugMessage("Made sort chest" + tempNetworkName + "-" + groupName);
+			plugin.debugMessage(networkData.networks.get(tempNetworkName).sortChests.get(0).group);
+		}
+		
 		if (plugin.debug) {
 			plugin.saveNetworksToFile();
 		}

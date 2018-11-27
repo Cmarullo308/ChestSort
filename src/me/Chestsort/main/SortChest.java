@@ -5,15 +5,15 @@ import org.bukkit.block.Block;
 public class SortChest {
 	public Block block;
 	public Block sign;
-	public String signText = "";
+	public String group = "";
 	public int priority;
 	public boolean inUse;
 
-	public SortChest(Block block, Block sign, String signText, int priority, boolean disregardDamage) {
+	public SortChest(Block block, Block sign, String group, int priority) {
 		this.block = block;
 		this.sign = sign;
 		this.priority = priority;
-		this.signText = signText;
+		this.group = group;
 		inUse = false;
 	}
 }

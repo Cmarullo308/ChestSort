@@ -18,14 +18,18 @@ public class Network {
 		this.owner = owner;
 		this.networkName = networkName;
 	}
-	
+
 	public String getMembersString() {
 		String ids = "";
-		for(UUID id : members) {
+		for (UUID id : members) {
 			ids += id.toString() + ", ";
 		}
-		
+
 		return ids.substring(0, ids.length() - 1);
+	}
+
+	public void addSortChest(Block chest, Block sign, String groupName, int priority) {
+		sortChests.add(new SortChest(chest, sign, groupName, priority));
 	}
 
 	public void addDepositChest(Network network, Block chestBlock, Block signBlock) {

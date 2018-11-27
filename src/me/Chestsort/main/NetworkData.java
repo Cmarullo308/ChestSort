@@ -4,21 +4,27 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import net.md_5.bungee.api.ChatColor;
 
 public class NetworkData {
 	ChestSort plugin;
 	// Files and FileConfigs
-	public FileConfiguration networks;
+	public FileConfiguration networksFileCongif;
 	public File networksFile;
+
+	ConcurrentHashMap<String, Network> networks = new ConcurrentHashMap<String, Network>();
 
 	public NetworkData(ChestSort plugin) {
 		this.plugin = plugin;
@@ -40,11 +46,19 @@ public class NetworkData {
 
 		}
 
-		networks = YamlConfiguration.loadConfiguration(networksFile);
+		networksFileCongif = YamlConfiguration.loadConfiguration(networksFile);
+	}
+
+	public boolean networkExists(String networkName) {
+		if (networks.get(networkName) != null) {
+			return true;
+		}
+
+		return false;
 	}
 
 	public FileConfiguration getNetworks() {
-		return networks;
+		return networksFileCongif;
 	}
 
 	public void saveNetwork(Network network) {
@@ -65,21 +79,23 @@ public class NetworkData {
 		// SortChests
 		if (network.sortChests.isEmpty()) {
 			getNetworks().set(path + ".Chests", new ArrayList<String>());
+			getNetworks().set(path + ".Chests", new ArrayList<String>());
+			plugin.debugMessage("\n\nSort chests empty for\n\n");
 		} else {
 			for (int i = 0; i < network.sortChests.size(); i++) {
 				SortChest sortChest = network.sortChests.get(i);
-				Block chest = network.sortChests.get(i).block;
+				Block chest = sortChest.block;
 				int x = new BigDecimal(chest.getLocation().getX()).intValue();
 				int z = new BigDecimal(chest.getLocation().getZ()).intValue();
-				Sign sign = (Sign) chest.getState();
+				Sign sign = (Sign) sortChest.sign.getState();
 				int signX = new BigDecimal(sign.getLocation().getX()).intValue();
 				int signZ = new BigDecimal(sign.getLocation().getZ()).intValue();
 
-				String chestPath = path + ".Chests." + chest.getWorld().toString() + "," + x + ","
+				String chestPath = path + ".Chests." + chest.getWorld().getName() + "," + x + ","
 						+ (int) chest.getLocation().getY() + "," + z;
 				// Sign location
 				getNetworks().set(chestPath + ".Sign",
-						chest.getWorld().toString() + "," + signX + "," + (int) sign.getY() + "," + signZ);
+						chest.getWorld().getName() + "," + signX + "," + (int) sign.getY() + "," + signZ);
 				getNetworks().set(chestPath + ".SignText", sign.getLine(1));
 				getNetworks().set(chestPath + ".Priority", sortChest.priority);
 			}
@@ -108,15 +124,91 @@ public class NetworkData {
 		}
 	}
 
+	public void createNewNetwork(Player player, String newNetworkName) {
+		Network newNetwork = new Network(player.getUniqueId(), newNetworkName);
+
+		networks.put(newNetworkName, newNetwork);
+		getNetworks().saveToString();
+		saveNetworkData();
+	}
+
 	public void saveNetworkData() {
 		try {
-			networks.save(networksFile);
+			networksFileCongif.save(networksFile);
 		} catch (IOException e) {
 			plugin.getServer().getLogger().info(ChatColor.RED + "Could not save networks.yml file");
 		}
 	}
 
 	public void reloadNetworks() {
-		networks = YamlConfiguration.loadConfiguration(networksFile);
+		networksFileCongif = YamlConfiguration.loadConfiguration(networksFile);
+	}
+
+	public void loadNetworkData() {
+		setup();
+
+		// From file to code
+		Set<String> uuidStrings;
+		try {
+			uuidStrings = getNetworks().getConfigurationSection("Owners").getKeys(false);
+		} catch (NullPointerException e) {
+			return;
+		}
+
+		// For each owner
+		for (String uuidString : uuidStrings) {
+			Set<String> networkNames = getNetworks().getConfigurationSection("Owners." + uuidString + ".NetworkNames")
+					.getKeys(false);
+			// For each network
+			for (String networkName : networkNames) {
+				UUID uuid = UUID.fromString(uuidString);
+				Network newNetwork = new Network(uuid, networkName);
+
+				// --ADD MEMBERS--
+				List<String> memberUuidStrings = getNetworks()
+						.getStringList("Owners." + uuidString + ".NetworkNames." + networkName + ".Members");
+				ArrayList<UUID> members = new ArrayList<UUID>();
+				// for each member
+				for (String newUiidStr : memberUuidStrings) {
+					members.add(UUID.fromString(newUiidStr));
+				}
+
+				newNetwork.members = members;
+				// --------------
+
+				// ADD DEPOSIT CHESTS
+				Set<String> depositChests = getNetworks()
+						.getConfigurationSection(
+								"Owners." + uuidString + ".NetworkNames." + networkName + ".DepositChests")
+						.getKeys(false);
+
+				// -for each deposit chest
+				for (String chest : depositChests) {
+					String[] chestAndLoc = chest.split(",");
+					Block newChestBlock = plugin.getServer().getWorld(chestAndLoc[0]).getBlockAt(
+							Integer.parseInt(chestAndLoc[1]), Integer.parseInt(chestAndLoc[2]),
+							Integer.parseInt(chestAndLoc[3]));
+					String[] sign = getNetworks().getString("Owners." + uuidString + ".NetworkNames." + networkName
+							+ ".DepositChests." + chest + ".Sign").split(",");
+					Block newSignBlock = plugin.getServer().getWorld(sign[0]).getBlockAt(Integer.parseInt(sign[1]),
+							Integer.parseInt(sign[2]), Integer.parseInt(sign[3]));
+
+					newNetwork.addDepositChest(newNetwork, newChestBlock, newSignBlock);
+				}
+				// ------------------
+
+				// ADD SORT CHESTS
+				
+				//BACK
+				
+				// ---------------
+
+				addNetwork(networkName, newNetwork);
+			} // (end) For each network
+		}
+	}
+
+	public void addNetwork(String networkName, Network network) {
+		networks.put(networkName, network);
 	}
 }
