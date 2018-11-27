@@ -4,6 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.Listener;
 
@@ -40,7 +41,7 @@ public class ChestSortListener implements Listener {
 		// If deposit chest
 		if (e.getLine(1).equals("")) {
 			// If network doesn't exist
-			if (networkData.getNetworks().get(tempNetworkName) == null) {
+			if (!networkData.networkExists(tempNetworkName)) {
 				networkData.createNewNetwork(player, tempNetworkName);
 				player.sendMessage("Network " + tempNetworkName + " created");
 			} else {
@@ -70,13 +71,23 @@ public class ChestSortListener implements Listener {
 
 			Block chest = e.getBlock().getLocation().add(0, -1, 0).getBlock();
 			Block sign = e.getBlock();
-			
+
 			networkData.networks.get(tempNetworkName).addSortChest(chest, sign, groupName, 2);
 			networkData.saveNetwork(networkData.networks.get(tempNetworkName));
 		}
-		
+
 		if (plugin.debug) {
 			plugin.saveNetworksToFile();
 		}
+	}
+
+	@EventHandler
+	public void blockBreak(BlockBreakEvent event) {
+		Block brokenBlock = event.getBlock();
+		if (brokenBlock.getType() != Material.CHEST && brokenBlock.getType() != Material.WALL_SIGN) {
+			return;
+		}
+		
+		networkData.checkAndRemoveChest(brokenBlock);
 	}
 }

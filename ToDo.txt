@@ -1,1 +1,3 @@
 check for items in multiple groups
+if not chests or members, delete network?
+can't break other peoples signs/chests

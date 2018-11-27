@@ -10,11 +10,13 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.material.Chest;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -62,7 +64,7 @@ public class NetworkData {
 	}
 
 	public void saveNetwork(Network network) {
-		plugin.debugMessage("saveNetwork");
+		// plugin.debugMessage("saveNetwork");
 		UUID uuid = network.owner;
 
 		String path = "Owners." + uuid + ".NetworkNames." + network.networkName;
@@ -80,7 +82,7 @@ public class NetworkData {
 		if (network.sortChests.isEmpty()) {
 			getNetworks().set(path + ".Chests", new ArrayList<String>());
 			getNetworks().set(path + ".Chests", new ArrayList<String>());
-			plugin.debugMessage("\n\nSort chests empty for\n\n");
+			// plugin.debugMessage("\n\nSort chests empty for\n\n");
 		} else {
 			for (SortChest sortChest : network.sortChests) {
 				// Chest
@@ -109,7 +111,7 @@ public class NetworkData {
 			}
 		}
 
-		plugin.debugMessage(network.depositChests.size() + "DCSAVE");
+		// plugin.debugMessage(network.depositChests.size() + "DCSAVE");
 
 		// Deposit Chests
 		for (Map.Entry<Block, NetworkItem> depositChest : network.depositChests.entrySet()) {
@@ -122,14 +124,13 @@ public class NetworkData {
 
 			String chestPath = path + ".DepositChests." + chest.getWorld().getName() + "," + x + ","
 					+ (int) chest.getLocation().getY() + "," + z;
-			plugin.debugMessage(chestPath);
+//			plugin.debugMessage(chestPath);
 			getNetworks().set(chestPath + ".Sign",
 					sign.getWorld().getName() + "," + signX + "," + (int) sign.getLocation().getY() + "," + signZ);
 		}
 
-		if (plugin.debug) {
-			saveNetworkData();
-		}
+		// remove later maybe?
+		saveNetworkData();
 	}
 
 	public void createNewNetwork(Player player, String newNetworkName) {
@@ -185,47 +186,64 @@ public class NetworkData {
 				// --------------
 
 				// ADD DEPOSIT CHESTS
-				Set<String> depositChests = getNetworks()
-						.getConfigurationSection(
-								"Owners." + uuidString + ".NetworkNames." + networkName + ".DepositChests")
-						.getKeys(false);
+				Set<String> depositChests = null;
+				boolean hasDepositChests = true;
+
+				try {
+					depositChests = getNetworks()
+							.getConfigurationSection(
+									"Owners." + uuidString + ".NetworkNames." + networkName + ".DepositChests")
+							.getKeys(false);
+				} catch (NullPointerException e) {
+					hasDepositChests = false;
+				}
 
 				// -for each deposit chest
-				for (String chest : depositChests) {
-					String[] chestAndLoc = chest.split(",");
-					Block newChestBlock = plugin.getServer().getWorld(chestAndLoc[0]).getBlockAt(
-							Integer.parseInt(chestAndLoc[1]), Integer.parseInt(chestAndLoc[2]),
-							Integer.parseInt(chestAndLoc[3]));
-					String[] sign = getNetworks().getString("Owners." + uuidString + ".NetworkNames." + networkName
-							+ ".DepositChests." + chest + ".Sign").split(",");
-					Block newSignBlock = plugin.getServer().getWorld(sign[0]).getBlockAt(Integer.parseInt(sign[1]),
-							Integer.parseInt(sign[2]), Integer.parseInt(sign[3]));
+				if (hasDepositChests) {
+					for (String chest : depositChests) {
+						String[] chestAndLoc = chest.split(",");
+						Block newChestBlock = plugin.getServer().getWorld(chestAndLoc[0]).getBlockAt(
+								Integer.parseInt(chestAndLoc[1]), Integer.parseInt(chestAndLoc[2]),
+								Integer.parseInt(chestAndLoc[3]));
+						String[] sign = getNetworks().getString("Owners." + uuidString + ".NetworkNames." + networkName
+								+ ".DepositChests." + chest + ".Sign").split(",");
+						Block newSignBlock = plugin.getServer().getWorld(sign[0]).getBlockAt(Integer.parseInt(sign[1]),
+								Integer.parseInt(sign[2]), Integer.parseInt(sign[3]));
 
-					newNetwork.addDepositChest(newNetwork, newChestBlock, newSignBlock);
+						newNetwork.addDepositChest(newNetwork, newChestBlock, newSignBlock);
+					}
 				}
 				// ------------------
 
 				// ADD SORT CHESTS
-				Set<String> sortChests = getNetworks()
-						.getConfigurationSection("Owners." + uuidString + ".NetworkNames." + networkName + ".Chests")
-						.getKeys(false);
+				Set<String> sortChests = null;
+				boolean hasSortChests = true;
+
+				try {
+					sortChests = getNetworks().getConfigurationSection(
+							"Owners." + uuidString + ".NetworkNames." + networkName + ".Chests").getKeys(false);
+				} catch (NullPointerException e) {
+					hasSortChests = false;
+				}
+
 				// -for each sort chest
-				for (String chest : sortChests) {
-					String[] chestAndLoc = chest.split(",");
-					Block newChestBlock = plugin.getServer().getWorld(chestAndLoc[0]).getBlockAt(
-							Integer.parseInt(chestAndLoc[1]), Integer.parseInt(chestAndLoc[2]),
-							Integer.parseInt(chestAndLoc[3]));
-					String[] sign = getNetworks().getString(
-							"Owners." + uuidString + ".NetworkNames." + networkName + ".Chests." + chest + ".Sign")
-							.split(",");
+				if (hasSortChests) {
+					for (String chest : sortChests) {
+						String[] chestAndLoc = chest.split(",");
+						Block newChestBlock = plugin.getServer().getWorld(chestAndLoc[0]).getBlockAt(
+								Integer.parseInt(chestAndLoc[1]), Integer.parseInt(chestAndLoc[2]),
+								Integer.parseInt(chestAndLoc[3]));
+						String[] sign = getNetworks().getString(
+								"Owners." + uuidString + ".NetworkNames." + networkName + ".Chests." + chest + ".Sign")
+								.split(",");
 
-					Block newSignBlock = plugin.getServer().getWorld(sign[0]).getBlockAt(Integer.parseInt(sign[1]),
-							Integer.parseInt(sign[2]), Integer.parseInt(sign[3]));
-					String groupName = getNetworks().getString(
-							"Owners." + uuidString + ".NetworkNames." + networkName + ".Chests." + chest + ".SignText");
+						Block newSignBlock = plugin.getServer().getWorld(sign[0]).getBlockAt(Integer.parseInt(sign[1]),
+								Integer.parseInt(sign[2]), Integer.parseInt(sign[3]));
+						String groupName = getNetworks().getString("Owners." + uuidString + ".NetworkNames."
+								+ networkName + ".Chests." + chest + ".SignText");
 
-					plugin.debugMessage(groupName + "LLLLLLLLLLLLLLLLLLLLLllllLLLL");
-					newNetwork.addSortChest(newChestBlock, newSignBlock, groupName, 2);
+						newNetwork.addSortChest(newChestBlock, newSignBlock, groupName, 2);
+					}
 				}
 
 				// ---------------
@@ -237,5 +255,76 @@ public class NetworkData {
 
 	public void addNetwork(String networkName, Network network) {
 		networks.put(networkName, network);
+	}
+
+	public void removeSortChestFromNetwork(Network network, Block chestBlock) {
+		int x = new BigDecimal(chestBlock.getLocation().getX()).intValue();
+		int y = (int) chestBlock.getLocation().getY();
+		int z = new BigDecimal(chestBlock.getLocation().getZ()).intValue();
+
+		String chestName = chestBlock.getWorld().getName() + "," + x + "," + y + "," + z;
+
+		getNetworks().set("Owners." + network.owner + ".NetworkNames." + network.networkName + ".Chests." + chestName,
+				null);
+		saveNetwork(network);
+	}
+
+	public void removeDepositChestFromNetwork(Network network, Block chestBlock) {
+		int x = new BigDecimal(chestBlock.getLocation().getX()).intValue();
+		int y = (int) chestBlock.getLocation().getY();
+		int z = new BigDecimal(chestBlock.getLocation().getZ()).intValue();
+
+		String chestName = chestBlock.getWorld().getName() + "," + x + "," + y + "," + z;
+		getNetworks().set(
+				"Owners." + network.owner + ".NetworkNames." + network.networkName + ".DepositChests." + chestName,
+				null);
+		saveNetwork(network);
+	}
+
+	public void checkAndRemoveChest(Block brokenBlock) {
+		Block chestBlock;
+		boolean blockIsChest;
+		if (brokenBlock.getType() == Material.WALL_SIGN) {
+			chestBlock = brokenBlock.getLocation().add(0, -1, 0).getBlock();
+			blockIsChest = false;
+		} else {
+			chestBlock = brokenBlock;
+			blockIsChest = true;
+		}
+
+		// If broken block is a chest
+		for (String netName : networks.keySet()) { // For each network
+			Network network = networks.get(netName);
+
+			for (int chestNum = 0; chestNum < network.sortChests.size(); chestNum++) { // For each sort chest in
+																						// network
+				if (network.sortChests.get(chestNum).block.equals(chestBlock)) {
+					plugin.debugMessage("TRUE");
+					network.sortChests.remove(chestNum);
+					if (blockIsChest) {
+						Sign sign = (Sign) chestBlock.getLocation().add(0, 1, 0).getBlock().getState();
+						sign.setLine(0, "");
+						sign.setLine(1, "");
+						sign.update();
+					}
+					removeSortChestFromNetwork(network, chestBlock);
+					return;
+				}
+			}
+
+			if (network.depositChests.containsKey(chestBlock)) {
+				plugin.debugMessage("TRUE 2");
+				network.depositChests.remove(chestBlock);
+				if (blockIsChest) {
+					Sign sign = (Sign) chestBlock.getLocation().add(0, 1, 0).getBlock().getState();
+					sign.setLine(0, "");
+					sign.setLine(1, "");
+					sign.setLine(2, "");
+					sign.update();
+				}
+				removeDepositChestFromNetwork(network, chestBlock);
+				return;
+			}
+		}
 	}
 }
