@@ -1,7 +1,6 @@
 package me.Chestsort.main;
 
 import org.bukkit.Material;
-import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.SignChangeEvent;
@@ -33,10 +32,11 @@ public class ChestSortListener implements Listener {
 
 		String newNetworkName = e.getLine(0).substring(1);
 
+		// If deposit chest
 		if (e.getLine(1).equals("")) {
 			// If network doesn't exist
 			if (plugin.networks.get(newNetworkName) == null) {
-				plugin.createNewNetwork(player, newNetworkName, player.getWorld());
+				plugin.createNewNetwork(player, newNetworkName);
 				player.sendMessage("Network " + newNetworkName + " created");
 			} else {
 				plugin.debugMessage("Network already exists");
@@ -44,14 +44,15 @@ public class ChestSortListener implements Listener {
 
 			e.setLine(1, ChatColor.GRAY + "Open Chest");
 			e.setLine(2, ChatColor.GRAY + "To Deposit");
+			Network newNetwork = plugin.networks.get(newNetworkName);
+			newNetwork.addDepositChest(newNetwork, e.getBlock().getLocation().add(0, -1, 0).getBlock(), e.getBlock());
+			plugin.networkdata.saveNetwork(newNetwork);
 		}
 
-		Network newNetwork = plugin.networks.get(newNetworkName);
-
-		newNetwork.addDepositChest(newNetwork, e.getBlock().getLocation().add(0, -1, 0).getBlock(), e.getBlock());
+		plugin.debugMessage(plugin.networks.get(newNetworkName).depositChests.size() + " DC");
 
 		if (plugin.debug) {
-			plugin.saveNetworks();
+			plugin.saveNetworksToFile();
 		}
 	}
 }

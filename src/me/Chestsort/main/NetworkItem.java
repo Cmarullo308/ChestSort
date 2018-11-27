@@ -12,4 +12,8 @@ public class NetworkItem {
 		this.chest = chest;
 		this.sign = sign;
 	}
+
+	public String getWorldString() {
+		return chest.getWorld().toString();
+	}
 }

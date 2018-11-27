@@ -9,13 +9,17 @@ public class CommandHandler {
 
 		switch (args[0].toLowerCase()) {
 		case "test":
-			sender.sendMessage("eeeeep");
+			testCommand(sender, args);
 			break;
 		default:
 			break;
 		}
 
 		return true;
+	}
+
+	private void testCommand(CommandSender sender, String[] args) {
+		
 	}
 
 }

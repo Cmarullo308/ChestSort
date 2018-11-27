@@ -2,13 +2,12 @@ package me.Chestsort.main;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -49,9 +48,10 @@ public class NetworkData {
 	}
 
 	public void saveNetwork(Network network) {
+		plugin.debugMessage("saveNetwork");
 		UUID uuid = network.owner;
 
-		String path = "Owners." + uuid + ".NetworkNames." + network.netwrokName;
+		String path = "Owners." + uuid + ".NetworkNames." + network.networkName;
 
 		// Members
 		ArrayList<String> UUIDStrings = new ArrayList<String>();
@@ -63,29 +63,44 @@ public class NetworkData {
 		}
 
 		// SortChests
-		for (SortChest chest : network.sortChests) {
-			plugin.debugMessage("POOOP");
-			String chestPath = path + ".Chests." + chest.block.getWorld().toString() + ","
-					+ chest.block.getLocation().getX() + "," + chest.block.getLocation().getY() + ","
-					+ chest.block.getLocation().getZ();
-			// Sign location
-			getNetworks().set(chestPath + ".Sign",
-					chest.sign.getWorld().toString() + "," + chest.sign.getLocation().getX() + ","
-							+ chest.sign.getLocation().getY() + "," + chest.sign.getLocation().getZ());
-			Sign sign = (Sign) chest.sign.getState();
-			getNetworks().set(chestPath + ".SignText", sign.getLine(1));
-			getNetworks().set(chestPath + ".Priority", chest.priority);
+		if (network.sortChests.isEmpty()) {
+			getNetworks().set(path + ".Chests", new ArrayList<String>());
+		} else {
+			for (int i = 0; i < network.sortChests.size(); i++) {
+				SortChest sortChest = network.sortChests.get(i);
+				Block chest = network.sortChests.get(i).block;
+				int x = new BigDecimal(chest.getLocation().getX()).intValue();
+				int z = new BigDecimal(chest.getLocation().getZ()).intValue();
+				Sign sign = (Sign) chest.getState();
+				int signX = new BigDecimal(sign.getLocation().getX()).intValue();
+				int signZ = new BigDecimal(sign.getLocation().getZ()).intValue();
+
+				String chestPath = path + ".Chests." + chest.getWorld().toString() + "," + x + ","
+						+ (int) chest.getLocation().getY() + "," + z;
+				// Sign location
+				getNetworks().set(chestPath + ".Sign",
+						chest.getWorld().toString() + "," + signX + "," + (int) sign.getY() + "," + signZ);
+				getNetworks().set(chestPath + ".SignText", sign.getLine(1));
+				getNetworks().set(chestPath + ".Priority", sortChest.priority);
+			}
 		}
 
+		plugin.debugMessage(network.depositChests.size() + "DCSAVE");
 
-		for (Entry<Block, NetworkItem> depositChest : network.depositChests.entrySet()) {
+		// Deposit Chests
+		for (Map.Entry<Block, NetworkItem> depositChest : network.depositChests.entrySet()) {
 			Block chest = depositChest.getValue().chest;
 			Block sign = depositChest.getValue().sign;
+			int x = new BigDecimal(chest.getLocation().getX()).intValue();
+			int z = new BigDecimal(chest.getLocation().getZ()).intValue();
+			int signX = new BigDecimal(sign.getLocation().getX()).intValue();
+			int signZ = new BigDecimal(sign.getLocation().getZ()).intValue();
 
-			String chestPath = path + ".DepositChests." + chest.getWorld().toString() + "," + chest.getLocation().getX()
-					+ "," + chest.getLocation().getY() + "," + chest.getLocation().getZ();
-			getNetworks().set(chestPath + ".Sign", sign.getWorld() + "," + sign.getLocation().getX() + ","
-					+ sign.getLocation().getY() + "," + sign.getLocation().getZ());
+			String chestPath = path + ".DepositChests." + chest.getWorld().getName() + "," + x + ","
+					+ (int) chest.getLocation().getY() + "," + z;
+			plugin.debugMessage(chestPath);
+			getNetworks().set(chestPath + ".Sign",
+					sign.getWorld().getName() + "," + signX + "," + (int) sign.getLocation().getY() + "," + signZ);
 		}
 
 		if (plugin.debug) {
