@@ -47,6 +47,8 @@ public class ChestSortListener implements Listener {
 			Network newNetwork = plugin.networks.get(newNetworkName);
 			newNetwork.addDepositChest(newNetwork, e.getBlock().getLocation().add(0, -1, 0).getBlock(), e.getBlock());
 			plugin.networkdata.saveNetwork(newNetwork);
+		} else {
+			
 		}
 
 		plugin.debugMessage(plugin.networks.get(newNetworkName).depositChests.size() + " DC");

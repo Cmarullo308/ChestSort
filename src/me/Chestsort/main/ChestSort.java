@@ -16,6 +16,7 @@ public class ChestSort extends JavaPlugin {
 	boolean debugMessages = true;
 	boolean debug = true;
 	NetworkData networkdata;
+	ChestGroupsData groupData = new ChestGroupsData(this);
 
 	CommandHandler commandHandler = new CommandHandler();
 
@@ -24,9 +25,26 @@ public class ChestSort extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		loadNetworkData();
+		groupData.setup();
+
+		tempStuff();
 
 		this.getServer().getPluginManager().registerEvents(new ChestSortListener(this), this);
 		super.onEnable();
+	}
+
+	private void tempStuff() {
+//		groupData.addToGroup("Wood", Material.ACACIA_FENCE);
+//		groupData.addToGroup("Wood", Material.OAK_BUTTON);
+//		groupData.saveGroups();
+//		debugMessage(groupData.groups.get("Wood").get(0) + "");
+		
+//		for(String key : groupData.groups.keySet()) {
+//			for(String m : groupData.groups.get(key)) {
+//				debugMessage(m.toString() + "\n");
+//			}
+//		}
+
 	}
 
 	private void loadNetworkData() {
@@ -67,7 +85,7 @@ public class ChestSort extends JavaPlugin {
 						.getConfigurationSection(
 								"Owners." + uuidString + ".NetworkNames." + networkName + ".DepositChests")
 						.getKeys(false);
-				
+
 				// -for each deposit chest
 				for (String chest : depositChests) {
 					String[] chestAndLoc = chest.split(",");
@@ -83,10 +101,10 @@ public class ChestSort extends JavaPlugin {
 				}
 				debugMessage(newNetwork.members.size() + " AAAAAAA");
 				// ------------------
-				
-				//ADD SORT CHESTS
-				
-				//---------------
+
+				// ADD SORT CHESTS
+
+				// ---------------
 
 			}
 		}
