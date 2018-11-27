@@ -51,7 +51,7 @@ public class ChestSortListener implements Listener {
 			e.setLine(2, ChatColor.GRAY + "To Deposit");
 			Network newNetwork = networkData.networks.get(tempNetworkName);
 			newNetwork.addDepositChest(newNetwork, e.getBlock().getLocation().add(0, -1, 0).getBlock(), e.getBlock());
-			plugin.networkdata.saveNetwork(newNetwork);
+			plugin.networkData.saveNetwork(newNetwork);
 		}
 		// Sort Chest
 		else {
@@ -73,8 +73,6 @@ public class ChestSortListener implements Listener {
 			
 			networkData.networks.get(tempNetworkName).addSortChest(chest, sign, groupName, 2);
 			networkData.saveNetwork(networkData.networks.get(tempNetworkName));
-			plugin.debugMessage("Made sort chest" + tempNetworkName + "-" + groupName);
-			plugin.debugMessage(networkData.networks.get(tempNetworkName).sortChests.get(0).group);
 		}
 		
 		if (plugin.debug) {

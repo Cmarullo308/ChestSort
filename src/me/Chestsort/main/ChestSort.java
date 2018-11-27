@@ -7,27 +7,24 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class ChestSort extends JavaPlugin {
 	boolean debugMessages = true;
 	boolean debug = true;
-	NetworkData networkdata = new NetworkData(this);
+	NetworkData networkData = new NetworkData(this);
 	ChestGroupsData groupData = new ChestGroupsData(this);
 
-	CommandHandler commandHandler = new CommandHandler();
+	CommandHandler commandHandler = new CommandHandler(this, networkData, groupData);
 
 	@Override
 	public void onEnable() {
-		networkdata.loadNetworkData();
+		networkData.loadNetworkData();
 		groupData.setup();
 
 
-		this.getServer().getPluginManager().registerEvents(new ChestSortListener(this, networkdata, groupData), this);
+		this.getServer().getPluginManager().registerEvents(new ChestSortListener(this, networkData, groupData), this);
 		getLogger().info("ChestSort Loaded");
 		super.onEnable();
 		tempStuff();
 	}
 
 	private void tempStuff() {
-		debugMessage(networkdata.networks.get("Fard").sortChests.get(0).group + "\n\n\n\n\n\n\n");
-
-//		groupData.saveGroupData();
 	}
 
 	@Override
@@ -38,7 +35,8 @@ public class ChestSort extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-
+//		networkData.saveNetworkData();
+//		groupData.saveGroupData();
 	}
 
 	public void debugMessage(String str) {
@@ -48,7 +46,7 @@ public class ChestSort extends JavaPlugin {
 	}
 
 	public void saveNetworksToFile() {
-		networkdata.saveNetworkData();
+		networkData.saveNetworkData();
 	}
 
 }

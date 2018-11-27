@@ -82,22 +82,30 @@ public class NetworkData {
 			getNetworks().set(path + ".Chests", new ArrayList<String>());
 			plugin.debugMessage("\n\nSort chests empty for\n\n");
 		} else {
-			for (int i = 0; i < network.sortChests.size(); i++) {
-				SortChest sortChest = network.sortChests.get(i);
-				Block chest = sortChest.block;
-				int x = new BigDecimal(chest.getLocation().getX()).intValue();
-				int z = new BigDecimal(chest.getLocation().getZ()).intValue();
-				Sign sign = (Sign) sortChest.sign.getState();
-				int signX = new BigDecimal(sign.getLocation().getX()).intValue();
-				int signZ = new BigDecimal(sign.getLocation().getZ()).intValue();
+			for (SortChest sortChest : network.sortChests) {
+				// Chest
+				Block chestBlock = sortChest.block;
+				int chestBlockX = new BigDecimal(chestBlock.getLocation().getX()).intValue();
+				int chestBlockY = (int) chestBlock.getLocation().getY();
+				int chestBlockZ = new BigDecimal(chestBlock.getLocation().getZ()).intValue();
 
-				String chestPath = path + ".Chests." + chest.getWorld().getName() + "," + x + ","
-						+ (int) chest.getLocation().getY() + "," + z;
-				// Sign location
+				// Sign
+				Block signBlock = sortChest.sign;
+				int signX = new BigDecimal(signBlock.getLocation().getX()).intValue();
+				int signY = (int) signBlock.getLocation().getY();
+				int signZ = new BigDecimal(signBlock.getLocation().getZ()).intValue();
+//				String groupName = ((Sign) signBlock.getState()).getLine(1); //if fail
+
+				String group = sortChest.group;
+				int priority = sortChest.priority;
+
+				String chestPath = "Owners." + uuid + ".NetworkNames." + network.networkName + ".Chests."
+						+ chestBlock.getWorld().getName() + "," + chestBlockX + "," + chestBlockY + "," + chestBlockZ;
+
 				getNetworks().set(chestPath + ".Sign",
-						chest.getWorld().getName() + "," + signX + "," + (int) sign.getY() + "," + signZ);
-				getNetworks().set(chestPath + ".SignText", sign.getLine(1));
-				getNetworks().set(chestPath + ".Priority", sortChest.priority);
+						signBlock.getWorld().getName() + "," + signX + "," + signY + "," + signZ);
+				getNetworks().set(chestPath + ".SignText", group);
+				getNetworks().set(chestPath + ".Priority", priority);
 			}
 		}
 
@@ -198,9 +206,28 @@ public class NetworkData {
 				// ------------------
 
 				// ADD SORT CHESTS
-				
-				//BACK
-				
+				Set<String> sortChests = getNetworks()
+						.getConfigurationSection("Owners." + uuidString + ".NetworkNames." + networkName + ".Chests")
+						.getKeys(false);
+				// -for each sort chest
+				for (String chest : sortChests) {
+					String[] chestAndLoc = chest.split(",");
+					Block newChestBlock = plugin.getServer().getWorld(chestAndLoc[0]).getBlockAt(
+							Integer.parseInt(chestAndLoc[1]), Integer.parseInt(chestAndLoc[2]),
+							Integer.parseInt(chestAndLoc[3]));
+					String[] sign = getNetworks().getString(
+							"Owners." + uuidString + ".NetworkNames." + networkName + ".Chests." + chest + ".Sign")
+							.split(",");
+
+					Block newSignBlock = plugin.getServer().getWorld(sign[0]).getBlockAt(Integer.parseInt(sign[1]),
+							Integer.parseInt(sign[2]), Integer.parseInt(sign[3]));
+					String groupName = getNetworks().getString(
+							"Owners." + uuidString + ".NetworkNames." + networkName + ".Chests." + chest + ".SignText");
+
+					plugin.debugMessage(groupName + "LLLLLLLLLLLLLLLLLLLLLllllLLLL");
+					newNetwork.addSortChest(newChestBlock, newSignBlock, groupName, 2);
+				}
+
 				// ---------------
 
 				addNetwork(networkName, newNetwork);

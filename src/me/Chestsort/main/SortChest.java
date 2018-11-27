@@ -5,7 +5,7 @@ import org.bukkit.block.Block;
 public class SortChest {
 	public Block block;
 	public Block sign;
-	public String group = "";
+	public String group;
 	public int priority;
 	public boolean inUse;
 

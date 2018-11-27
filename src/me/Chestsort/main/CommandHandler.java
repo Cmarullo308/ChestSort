@@ -4,6 +4,15 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 public class CommandHandler {
+	ChestSort plugin;
+	NetworkData networkData;
+	ChestGroupsData groupData;
+
+	public CommandHandler(ChestSort plugin, NetworkData networkData, ChestGroupsData groupData) {
+		this.plugin = plugin;
+		this.networkData = networkData;
+		this.groupData = groupData;
+	}
 
 	public boolean command(CommandSender sender, Command command, String label, String[] args) {
 
@@ -19,7 +28,9 @@ public class CommandHandler {
 	}
 
 	private void testCommand(CommandSender sender, String[] args) {
-		
+		for(SortChest chest : networkData.networks.get(args[1]).sortChests) {
+			plugin.debugMessage(chest.group);
+		}
 	}
 
 }
