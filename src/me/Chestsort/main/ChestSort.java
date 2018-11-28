@@ -1,5 +1,8 @@
 package me.Chestsort.main;
 
+import java.math.BigDecimal;
+
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -16,7 +19,6 @@ public class ChestSort extends JavaPlugin {
 	public void onEnable() {
 		networkData.loadNetworkData();
 		groupData.setup();
-
 
 		this.getServer().getPluginManager().registerEvents(new ChestSortListener(this, networkData, groupData), this);
 		getLogger().info("ChestSort Loaded");
@@ -49,4 +51,10 @@ public class ChestSort extends JavaPlugin {
 		networkData.saveNetworkData();
 	}
 
+	public void printLocation(Location loc) {
+		double x = new BigDecimal(loc.getX()).doubleValue();
+		double y = loc.getY();
+		double z = new BigDecimal(loc.getZ()).doubleValue();
+		getLogger().info(loc.getWorld().getName() + ": " + x + ", " + y + ", " + z);
+	}
 }
