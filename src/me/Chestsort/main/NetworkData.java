@@ -16,8 +16,6 @@ import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.material.Chest;
-
 import net.md_5.bungee.api.ChatColor;
 
 public class NetworkData {
@@ -61,6 +59,16 @@ public class NetworkData {
 
 	public FileConfiguration getNetworks() {
 		return networksFileCongif;
+	}
+
+	public Network getDepositChestNetwork(Block chest) {
+		for (String networkName : networks.keySet()) { // for each network
+			if (networks.get(networkName).hasDepositChest(chest)) { // fix func
+				return networks.get(networkName);
+			}
+		}
+
+		return null;
 	}
 
 	public void saveNetwork(Network network) {
@@ -134,7 +142,7 @@ public class NetworkData {
 	}
 
 	public void createNewNetwork(Player player, String newNetworkName) {
-		Network newNetwork = new Network(player.getUniqueId(), newNetworkName);
+		Network newNetwork = new Network(player.getUniqueId(), newNetworkName, plugin);
 
 		networks.put(newNetworkName, newNetwork);
 		getNetworks().saveToString();
@@ -171,7 +179,7 @@ public class NetworkData {
 			// For each network
 			for (String networkName : networkNames) {
 				UUID uuid = UUID.fromString(uuidString);
-				Network newNetwork = new Network(uuid, networkName);
+				Network newNetwork = new Network(uuid, networkName, plugin);
 
 				// --ADD MEMBERS--
 				List<String> memberUuidStrings = getNetworks()
@@ -241,8 +249,10 @@ public class NetworkData {
 								Integer.parseInt(sign[2]), Integer.parseInt(sign[3]));
 						String groupName = getNetworks().getString("Owners." + uuidString + ".NetworkNames."
 								+ networkName + ".Chests." + chest + ".SignText");
+						int priority = Integer.parseInt(getNetworks().getString("Owners." + uuidString
+								+ ".NetworkNames." + networkName + ".Chests." + chest + ".Priority"));
 
-						newNetwork.addSortChest(newChestBlock, newSignBlock, groupName, 2);
+						newNetwork.addSortChest(newChestBlock, newSignBlock, groupName, priority);
 					}
 				}
 
@@ -299,7 +309,6 @@ public class NetworkData {
 			for (int chestNum = 0; chestNum < network.sortChests.size(); chestNum++) { // For each sort chest in
 																						// network
 				if (network.sortChests.get(chestNum).block.equals(chestBlock)) {
-					plugin.debugMessage("TRUE");
 					network.sortChests.remove(chestNum);
 					if (blockIsChest) {
 						Sign sign = (Sign) chestBlock.getLocation().add(0, 1, 0).getBlock().getState();
@@ -313,7 +322,6 @@ public class NetworkData {
 			}
 
 			if (network.depositChests.containsKey(chestBlock)) {
-				plugin.debugMessage("TRUE 2");
 				network.depositChests.remove(chestBlock);
 				if (blockIsChest) {
 					Sign sign = (Sign) chestBlock.getLocation().add(0, 1, 0).getBlock().getState();
