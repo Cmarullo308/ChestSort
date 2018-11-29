@@ -10,14 +10,14 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.Directional;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 public class Sorter {
-	public static void AutoSort(Block fromBlock, Inventory inventory, ChestSort plugin, NetworkData networkData,
-			ChestGroupsData groupsData) {
+	public static void AutoSort(Block fromBlock, Inventory inventory, HumanEntity whoClicked, ChestSort plugin,
+			NetworkData networkData, ChestGroupsData groupsData) {
 
-		Block originalFromBlock = fromBlock;
 		fromBlock = checkChest(fromBlock, plugin, networkData);
 
 		Network network = networkData.getDepositChestNetwork(fromBlock);
@@ -27,6 +27,12 @@ public class Sorter {
 
 		NetworkItem depositChest = network.getDepositChest(fromBlock);
 
+		while (depositChest.inUse) {
+			plugin.debugMessage("AA\n  AA");
+		}
+
+		depositChest.inUse = true;
+
 		ItemStack[] contents = inventory.getContents();
 
 		for (int slotNum = 0; slotNum < contents.length; slotNum++) { // For each item in chest
@@ -35,10 +41,10 @@ public class Sorter {
 				if (groupsData.isValidGroup(group)) { // If the item is in a group
 					// Get lists of sortChests with that group && misc and sorts them
 					ArrayList<SortChest> sortChests = network.getSortChestsOfGroup(group);
-					ArrayList<SortChest> sortChestMisc = network.getSortChestsOfGroup("Misc");
+					ArrayList<SortChest> sortChestsMisc = network.getSortChestsOfGroup("Misc");
 					Network.sortChestsByPriority(sortChests, 0, sortChests.size() - 1);
-					Network.sortChestsByPriority(sortChestMisc, 0, sortChestMisc.size() - 1);
-					sortChests.addAll(sortChestMisc);
+					Network.sortChestsByPriority(sortChestsMisc, 0, sortChestsMisc.size() - 1);
+					sortChests.addAll(sortChestsMisc);
 					// -----------------------------------------------------------------
 					contents[slotNum] = moveItemStacksToChests(contents[slotNum], sortChests);
 					//
@@ -53,10 +59,11 @@ public class Sorter {
 			}
 		}
 
-//		Chest depChest = (Chest) fromBlock.getState();
 		inventory.setContents(contents);
 
 		depositChest.inUse = false;
+
+		plugin.debugMessage("1 loop");
 	}
 
 	private static Block checkChest(Block fromBlock, ChestSort plugin, NetworkData networkData) {
@@ -104,6 +111,10 @@ public class Sorter {
 	}
 
 	private static ItemStack moveItemStacksToChests(ItemStack itemstack, ArrayList<SortChest> toChests) {
+		if (toChests.size() == 0) {
+			return itemstack;
+		}
+
 		int chestNum = 0;
 
 		Chest chest = (Chest) toChests.get(chestNum).block.getState();

@@ -1,18 +1,14 @@
 package me.Chestsort.main;
 
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
-import org.bukkit.block.DoubleChest;
-import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.Listener;
 
 import me.Chestsort.main.ChestSort;
@@ -37,7 +33,6 @@ public class ChestSortListener implements Listener {
 		}
 		// If block under sign isn't a chest
 		if (e.getBlock().getLocation().add(0, -1, 0).getBlock().getType() != Material.CHEST) {
-			plugin.debugMessage("Not chest");
 			return;
 		}
 
@@ -51,8 +46,6 @@ public class ChestSortListener implements Listener {
 			if (!networkData.networkExists(tempNetworkName)) {
 				networkData.createNewNetwork(player, tempNetworkName);
 				player.sendMessage("Network " + tempNetworkName + " created");
-			} else {
-				plugin.debugMessage("Network already exists");
 			}
 
 			e.setLine(1, ChatColor.GRAY + "Open Chest");
@@ -96,19 +89,36 @@ public class ChestSortListener implements Listener {
 	public final void onInventoryMove(InventoryClickEvent event) {
 		if (event.getInventory().getType() == InventoryType.CHEST) {
 			Block inventoryBlock = event.getInventory().getLocation().getBlock();
-			Sorter.AutoSort(inventoryBlock, event.getInventory(), plugin, networkData, groupsData);
+
+			Thread autoSortThread = new Thread() {
+				@Override
+				public void run() {
+					Sorter.AutoSort(inventoryBlock, event.getInventory(), event.getWhoClicked(), plugin, networkData,
+							groupsData);
+				}
+			};
+			
+			autoSortThread.start();
 		}
 	}
 
 	@EventHandler
 	public void blockBreak(BlockBreakEvent event) {
-		plugin.debugMessage(event.getBlock().getLocation().toString());
-
 		Block brokenBlock = event.getBlock();
-		if (brokenBlock.getType() != Material.CHEST && brokenBlock.getType() != Material.WALL_SIGN) {
+
+		switch (brokenBlock.getType()) {
+		case CHEST:
+		case WALL_SIGN:
+			networkData.checkAndRemoveChest(brokenBlock);
+			break;
+		default:
 			return;
 		}
 
-		networkData.checkAndRemoveChest(brokenBlock);
+//		if (brokenBlock.getType() != Material.CHEST && brokenBlock.getType() != Material.WALL_SIGN) {
+//			return;
+//		}
+//
+//		networkData.checkAndRemoveChest(brokenBlock);
 	}
 }

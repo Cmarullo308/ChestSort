@@ -17,6 +17,9 @@ public class ChestSort extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
+		getConfig().options().copyDefaults(true);
+		saveConfig();
+		
 		networkData.loadNetworkData();
 		groupData.setup();
 
