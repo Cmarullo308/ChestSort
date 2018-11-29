@@ -94,9 +94,8 @@ public class ChestSortListener implements Listener {
 
 	@EventHandler
 	public final void onInventoryMove(InventoryClickEvent event) {
-		Block inventoryBlock = event.getInventory().getLocation().getBlock();
-
 		if (event.getInventory().getType() == InventoryType.CHEST) {
+			Block inventoryBlock = event.getInventory().getLocation().getBlock();
 			Sorter.AutoSort(inventoryBlock, event.getInventory(), plugin, networkData, groupsData);
 		}
 	}

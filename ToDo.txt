@@ -1,5 +1,5 @@
 check for items in multiple groups
 if not chests or members, delete network?
 can't break other peoples signs/chests
-
+Check that chests and signs are still there every day
 make doublchest fix bs check if sign starts with star
