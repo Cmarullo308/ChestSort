@@ -80,13 +80,11 @@ public class ChestSortListener implements Listener {
 			networkData.networks.get(tempNetworkName).addSortChest(chest, sign, groupName, 2);
 			networkData.saveNetwork(networkData.networks.get(tempNetworkName));
 
-			e.getPlayer().sendMessage("Chest created for group " + ChatColor.YELLOW + groupName + ChatColor.WHITE
+			player.sendMessage("Chest created for group " + ChatColor.YELLOW + groupName + ChatColor.WHITE
 					+ " in network " + ChatColor.YELLOW + tempNetworkName);
 		}
 
-		if (plugin.debug) {
-			plugin.saveNetworksToFile();
-		}
+		plugin.saveNetworksToFile();
 	}
 
 	@EventHandler

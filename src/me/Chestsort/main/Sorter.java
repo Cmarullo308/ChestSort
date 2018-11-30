@@ -24,7 +24,7 @@ public class Sorter {
 		fromBlock = checkChest(fromBlock, plugin, networkData);
 
 		Network network = networkData.getDepositChestNetwork(fromBlock);
-		if (network == null) { // Not a deposit chest
+		if (network == null) { // If the chest isnt a deposit chest
 			return;
 		}
 
@@ -32,14 +32,22 @@ public class Sorter {
 
 		NetworkItem depositChest = network.getDepositChest(fromBlock);
 
+		// Waits untill the deposit chest is done being in use OR if 1.5 seconds pass
+		Timer timer = new Timer();
+		timer.start();
 		while (depositChest.inUse) {
-			plugin.debugMessage("AA\n  AA");
+			if (timer.getTime() > 1500) {
+				depositChest.inUse = false;
+				timer.stop();
+				plugin.debugMessage("Deposit chest wait timed out");
+			}
 		}
 
 		depositChest.inUse = true;
 
 		ItemStack[] contents = inventory.getContents();
 
+		// Moves all the items in the chest to the sortchests
 		for (int slotNum = 0; slotNum < contents.length; slotNum++) { // For each item in chest
 			if (contents[slotNum] != null) { // If item isnt null
 				contentsStartedEmpty = false;
@@ -67,16 +75,17 @@ public class Sorter {
 
 		inventory.setContents(contents);
 
+		// Checks if there wasn't enough space to move all the chest items
 		boolean notEnoughSpace = false;
 		for (ItemStack item : contents) {
 			if (item != null) {
-				plugin.debugMessage("????!?!?!");
 				notEnoughSpace = true;
 			}
 		}
 
 		depositChest.inUse = false;
 
+		// Sends sound to player
 		if (whoClicked instanceof Player) {
 			if (Boolean.parseBoolean(plugin.getConfig().getString("sort_sound_enabled"))) {
 				if (!contentsStartedEmpty) {
