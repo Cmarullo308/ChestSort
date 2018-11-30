@@ -3,7 +3,6 @@ package me.Chestsort.main;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
@@ -53,6 +52,8 @@ public class ChestSortListener implements Listener {
 			Network newNetwork = networkData.networks.get(tempNetworkName);
 			newNetwork.addDepositChest(newNetwork, e.getBlock().getLocation().add(0, -1, 0).getBlock(), e.getBlock());
 			plugin.networkData.saveNetwork(newNetwork);
+
+			player.sendMessage("Deposit chest created for network " + ChatColor.YELLOW + tempNetworkName);
 		}
 		// Sort Chest
 		else {
@@ -78,6 +79,9 @@ public class ChestSortListener implements Listener {
 
 			networkData.networks.get(tempNetworkName).addSortChest(chest, sign, groupName, 2);
 			networkData.saveNetwork(networkData.networks.get(tempNetworkName));
+
+			e.getPlayer().sendMessage("Chest created for group " + ChatColor.YELLOW + groupName + ChatColor.WHITE
+					+ " in network " + ChatColor.YELLOW + tempNetworkName);
 		}
 
 		if (plugin.debug) {
@@ -97,7 +101,7 @@ public class ChestSortListener implements Listener {
 							groupsData);
 				}
 			};
-			
+
 			autoSortThread.start();
 		}
 	}

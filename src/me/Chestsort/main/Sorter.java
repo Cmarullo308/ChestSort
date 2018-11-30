@@ -11,8 +11,11 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.Directional;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import net.md_5.bungee.api.ChatColor;
 
 public class Sorter {
 	public static void AutoSort(Block fromBlock, Inventory inventory, HumanEntity whoClicked, ChestSort plugin,
@@ -24,6 +27,8 @@ public class Sorter {
 		if (network == null) { // Not a deposit chest
 			return;
 		}
+
+		boolean contentsStartedEmpty = true;
 
 		NetworkItem depositChest = network.getDepositChest(fromBlock);
 
@@ -37,6 +42,7 @@ public class Sorter {
 
 		for (int slotNum = 0; slotNum < contents.length; slotNum++) { // For each item in chest
 			if (contents[slotNum] != null) { // If item isnt null
+				contentsStartedEmpty = false;
 				String group = groupsData.getGroupName(contents[slotNum].getType());
 				if (groupsData.isValidGroup(group)) { // If the item is in a group
 					// Get lists of sortChests with that group && misc and sorts them
@@ -61,9 +67,28 @@ public class Sorter {
 
 		inventory.setContents(contents);
 
+		boolean notEnoughSpace = false;
+		for (ItemStack item : contents) {
+			if (item != null) {
+				plugin.debugMessage("????!?!?!");
+				notEnoughSpace = true;
+			}
+		}
+
 		depositChest.inUse = false;
 
-		plugin.debugMessage("1 loop");
+		if (whoClicked instanceof Player) {
+			if (Boolean.parseBoolean(plugin.getConfig().getString("sort_sound_enabled"))) {
+				if (!contentsStartedEmpty) {
+					if (notEnoughSpace) {
+						((Player) whoClicked).playSound(whoClicked.getLocation(), plugin.notEnoughSpaceSound, 2f, 1f);
+						whoClicked.sendMessage(ChatColor.RED + "No space in the network for these items");
+					} else {
+						((Player) whoClicked).playSound(whoClicked.getLocation(), plugin.sortSound, 2f, 1f);
+					}
+				}
+			}
+		}
 	}
 
 	private static Block checkChest(Block fromBlock, ChestSort plugin, NetworkData networkData) {
