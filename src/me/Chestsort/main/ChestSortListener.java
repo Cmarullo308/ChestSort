@@ -111,15 +111,15 @@ public class ChestSortListener implements Listener {
 		if (event.getInventory().getType() == InventoryType.CHEST) {
 			Block inventoryBlock = event.getInventory().getLocation().getBlock();
 
-//			Thread autoSortThread = new Thread() {
-//				@Override
-//				public void run() {
+			Thread autoSortThread = new Thread() {
+				@Override
+				public void run() {
 					Sorter.AutoSort(inventoryBlock, event.getInventory(), event.getWhoClicked(), plugin, networkData,
 							groupsData);
-//				}
-//			};
-//
-//			autoSortThread.start();
+				}
+			};
+
+			autoSortThread.start();
 		}
 	}
 
