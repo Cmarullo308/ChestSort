@@ -110,17 +110,17 @@ public class Sorter {
 				fromBlock.getLocation().getY(), fromBlock.getLocation().getZ());
 
 		if ((dir.getFacing() == BlockFace.SOUTH || dir.getFacing() == BlockFace.NORTH)
-				&& checkSigns(loc, dir.getFacing(), networkData)) {
+				&& checkSigns(loc, dir.getFacing(), networkData, plugin)) {
 			return fromBlock.getLocation().add(1, 0, 0).getBlock();
 		} else if ((dir.getFacing() == BlockFace.EAST || dir.getFacing() == BlockFace.WEST)
-				&& checkSigns(loc, dir.getFacing(), networkData)) {
+				&& checkSigns(loc, dir.getFacing(), networkData, plugin)) {
 			return fromBlock.getLocation().add(0, 0, 1).getBlock();
 		}
 
 		return fromBlock;
 	}
 
-	private static boolean checkSigns(Location loc, BlockFace facing, NetworkData networkData) {
+	private static boolean checkSigns(Location loc, BlockFace facing, NetworkData networkData, ChestSort plugin) {
 		if (loc.clone().add(0, 1, 0).getBlock().getType() != Material.WALL_SIGN) {
 			return true;
 		}
@@ -128,19 +128,23 @@ public class Sorter {
 		if (facing == BlockFace.EAST || facing == BlockFace.WEST) {
 			if (loc.clone().add(0, 1, 1).getBlock().getType() == Material.WALL_SIGN) {
 				Sign sign = (Sign) loc.clone().add(0, 1, 1).getBlock().getState();
-				if (sign.getLine(0).length() > 1 && networkData.networkExists(sign.getLine(0).substring(1))) {
+				plugin.debugMessage(sign.getLine(0));
+				if (sign.getLine(0).contains("*")
+						&& networkData.networkExists(sign.getLine(0).substring(sign.getLine(0).indexOf("*") + 1))) {
+					plugin.debugMessage("True 1");
 					return true;
 				}
 			}
 		} else {
-			if (loc.clone().add(0, 1, 0).getBlock().getType() == Material.WALL_SIGN) {
+			if (loc.clone().add(1, 1, 0).getBlock().getType() == Material.WALL_SIGN) {
 				Sign sign = (Sign) loc.clone().add(1, 1, 0).getBlock().getState();
-				if (sign.getLine(0).length() > 1 && networkData.networkExists(sign.getLine(0).substring(1))) {
+				if (sign.getLine(0).contains("*")
+						&& networkData.networkExists(sign.getLine(0).substring(sign.getLine(0).indexOf("*") + 1))) {
+					plugin.debugMessage("True 2");
 					return true;
 				}
 			}
 		}
-
 		return false;
 	}
 

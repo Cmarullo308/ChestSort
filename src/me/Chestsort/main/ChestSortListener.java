@@ -47,6 +47,7 @@ public class ChestSortListener implements Listener {
 				player.sendMessage("Network " + tempNetworkName + " created");
 			}
 
+			e.setLine(0, ChatColor.DARK_BLUE + e.getLine(0));
 			e.setLine(1, ChatColor.GRAY + "Open Chest");
 			e.setLine(2, ChatColor.GRAY + "To Deposit");
 			Network newNetwork = networkData.networks.get(tempNetworkName);
@@ -67,6 +68,20 @@ public class ChestSortListener implements Listener {
 				return;
 			}
 
+			int newChestPriority;
+
+			if (!e.getLine(2).equals("")) {
+				try {
+					newChestPriority = Integer.parseInt(e.getLine(2));
+				} catch (NumberFormatException ex) {
+					newChestPriority = plugin.defaultChestPriority;
+					player.sendMessage(ChatColor.RED + "Invalid priority number, resetting to default " + ChatColor.BLUE
+							+ plugin.defaultChestPriority);
+				}
+			} else {
+				newChestPriority = plugin.defaultChestPriority;
+			}
+
 			String groupName = e.getLine(1);
 			if (!groupsData.isValidGroup(groupName)) {
 				player.sendMessage(
@@ -74,11 +89,15 @@ public class ChestSortListener implements Listener {
 				return;
 			}
 
+			e.setLine(0, ChatColor.DARK_BLUE + e.getLine(0));
+			e.setLine(2, ChatColor.GRAY + "Priority: " + newChestPriority);
+
 			Block chest = e.getBlock().getLocation().add(0, -1, 0).getBlock();
 			Block sign = e.getBlock();
 
-			networkData.networks.get(tempNetworkName).addSortChest(chest, sign, groupName, 2);
-			networkData.saveNetwork(networkData.networks.get(tempNetworkName));
+			Network network = networkData.networks.get(tempNetworkName);
+			network.addSortChest(chest, sign, groupName, newChestPriority);
+			networkData.saveNetwork(network);
 
 			player.sendMessage("Chest created for group " + ChatColor.YELLOW + groupName + ChatColor.WHITE
 					+ " in network " + ChatColor.YELLOW + tempNetworkName);
@@ -92,15 +111,15 @@ public class ChestSortListener implements Listener {
 		if (event.getInventory().getType() == InventoryType.CHEST) {
 			Block inventoryBlock = event.getInventory().getLocation().getBlock();
 
-			Thread autoSortThread = new Thread() {
-				@Override
-				public void run() {
+//			Thread autoSortThread = new Thread() {
+//				@Override
+//				public void run() {
 					Sorter.AutoSort(inventoryBlock, event.getInventory(), event.getWhoClicked(), plugin, networkData,
 							groupsData);
-				}
-			};
-
-			autoSortThread.start();
+//				}
+//			};
+//
+//			autoSortThread.start();
 		}
 	}
 

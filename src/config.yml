@@ -1,2 +1,5 @@
+default_chest_priority: 2
 sort_sound_enabled: true
 sort_sound: UI_TOAST_IN
+not_enough_space_sound_enabled: true
+not_enough_space_sound: ENTITY_BAT_TAKEOFF

@@ -16,6 +16,7 @@ public class ChestSort extends JavaPlugin {
 
 	Sound sortSound;
 	Sound notEnoughSpaceSound;
+	int defaultChestPriority;
 
 	CommandHandler commandHandler = new CommandHandler(this, networkData, groupData);
 
