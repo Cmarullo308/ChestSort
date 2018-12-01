@@ -42,6 +42,92 @@ public class CommandHandler {
 		return true;
 	}
 
+	private void networkCommands(CommandSender sender, String[] args) {
+		if (args.length == 3) {
+			if (args[2].equalsIgnoreCase("create")) {
+				createNewNetwork(sender, args[1]);
+			} else if (args[2].equalsIgnoreCase("remove")) {
+				removeNetwork(sender, args[1]);
+			} else if (args[2].equalsIgnoreCase("info")) {
+				printNetworkInfo(sender, args[1]);
+			}
+		} else if (args.length == 5) {
+			if (args[2].equalsIgnoreCase("members")) {
+				membersCommands(sender, args);
+			}
+		} else {
+			sender.sendMessage(ChatColor.RED + "Invalid number of arguements");
+		}
+	}
+
+	private void membersCommands(CommandSender sender, String[] args) {
+		if (args[3].equalsIgnoreCase("add")) {
+			addMember(sender, args);
+		} else if (args[3].equalsIgnoreCase("remove")) {
+			removeMember(sender, args);
+		}
+	}
+
+	private void removeMember(CommandSender sender, String[] args) {
+		String networkName = args[1];
+		String memberName = args[4];
+
+		if (!networkData.networkExists(networkName)) {
+			sender.sendMessage(ChatColor.RED + "No network named " + ChatColor.YELLOW + networkName);
+			return;
+		}
+
+		Network network = networkData.getNetwork(networkName);
+
+		if (!(sender instanceof Player) && !network.isOwner((Player) sender) && !sender.isOp()) {
+			sender.sendMessage(ChatColor.RED + "Must be the owner or a memebr of the network " + ChatColor.YELLOW
+					+ network.networkName + ChatColor.RED + " to modify its members");
+			return;
+		}
+
+		Player member = Bukkit.getPlayer(memberName);
+		if (member == null) {
+			sender.sendMessage(ChatColor.RED + "No player named " + ChatColor.YELLOW + memberName);
+			return;
+		}
+
+		network.removeMember(member);
+		networkData.saveNetwork(network);
+
+		sender.sendMessage(ChatColor.GREEN + "You removed " + ChatColor.YELLOW + memberName + ChatColor.GREEN
+				+ " as a member from the network " + ChatColor.YELLOW + networkName);
+	}
+
+	private void addMember(CommandSender sender, String[] args) {
+		String networkName = args[1];
+		String newMemberName = args[4];
+
+		if (!networkData.networkExists(networkName)) {
+			sender.sendMessage(ChatColor.RED + "No network named " + ChatColor.YELLOW + networkName);
+			return;
+		}
+
+		Network network = networkData.getNetwork(networkName);
+
+		if (!(sender instanceof Player) && !network.isOwner((Player) sender) && !sender.isOp()) {
+			sender.sendMessage(ChatColor.RED + "Must be the owner or a memebr of the network " + ChatColor.YELLOW
+					+ network.networkName + ChatColor.RED + " to modify its members");
+			return;
+		}
+
+		Player newMember = Bukkit.getPlayer(newMemberName);
+		if (newMember == null) {
+			sender.sendMessage(ChatColor.RED + "No player named " + ChatColor.YELLOW + newMemberName);
+			return;
+		}
+
+		network.addMember(newMember);
+		networkData.saveNetwork(network);
+		
+		sender.sendMessage(ChatColor.GREEN + "You added " + ChatColor.YELLOW + newMemberName + ChatColor.GREEN
+				+ " as a member to the network " + ChatColor.YELLOW + networkName);
+	}
+
 	private void priorityCommand(CommandSender sender, String[] args) {
 		if (args.length != 2 && args.length != 3) {
 			sender.sendMessage(ChatColor.RED + "Invalid number of arguements. /SortChest <priority> <set | get>");
@@ -122,25 +208,6 @@ public class CommandHandler {
 		networkData.saveNetwork(network);
 
 		player.sendMessage(ChatColor.GREEN + "Chest priority set to " + ChatColor.YELLOW + sortChest.priority);
-	}
-
-	private void networkCommands(CommandSender sender, String[] args) {
-		if (args.length != 3) {
-			sender.sendMessage(ChatColor.RED + "Invalid number of arguements." + ChatColor.GREEN
-					+ " /SortChest <network> <networkName> <Create | Remove | Info>");
-			return;
-		}
-
-		if (args[2].equalsIgnoreCase("create")) {
-			createNewNetwork(sender, args[2]);
-		} else if (args[2].equalsIgnoreCase("remove")) {
-			removeNetwork(sender, args[1]);
-		} else if (args[2].equalsIgnoreCase("info")) {
-			printNetworkInfo(sender, args[1]);
-		} else {
-			sender.sendMessage(
-					ChatColor.RED + "Invalid arguements. /SortChest <network> <networkName> <Create | Remove | Info>");
-		}
 	}
 
 	private void printNetworkInfo(CommandSender sender, String networkName) {

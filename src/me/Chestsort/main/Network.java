@@ -124,6 +124,22 @@ public class Network {
 		return depositChests.containsKey(chest);
 	}
 
+	public void addMember(Player player) {
+		addMember(player.getUniqueId());
+	}
+
+	public void addMember(UUID playerID) {
+		members.add(playerID);
+	}
+
+	public void removeMember(Player player) {
+		removeMember(player.getUniqueId());
+	}
+
+	public void removeMember(UUID playerID) {
+		members.remove(playerID);
+	}
+
 	public void addSortChest(Block chest, Block sign, String groupName, int priority) {
 		sortChests.add(new SortChest(chest, sign, groupName, priority, this));
 	}
