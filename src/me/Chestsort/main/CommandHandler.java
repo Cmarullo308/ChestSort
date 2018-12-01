@@ -91,11 +91,16 @@ public class CommandHandler {
 			return;
 		}
 
-		network.removeMember(member);
-		networkData.saveNetwork(network);
+		if (network.isMember(member)) {
+			network.removeMember(member);
+			networkData.saveNetwork(network);
+			sender.sendMessage(ChatColor.GREEN + "You removed " + ChatColor.YELLOW + memberName + ChatColor.GREEN
+					+ " as a member from the network " + ChatColor.YELLOW + networkName);
+		} else {
+			sender.sendMessage(ChatColor.YELLOW + memberName + ChatColor.RED + " is not a member of the network "
+					+ ChatColor.YELLOW + networkName);
+		}
 
-		sender.sendMessage(ChatColor.GREEN + "You removed " + ChatColor.YELLOW + memberName + ChatColor.GREEN
-				+ " as a member from the network " + ChatColor.YELLOW + networkName);
 	}
 
 	private void addMember(CommandSender sender, String[] args) {
@@ -121,11 +126,16 @@ public class CommandHandler {
 			return;
 		}
 
-		network.addMember(newMember);
-		networkData.saveNetwork(network);
-		
-		sender.sendMessage(ChatColor.GREEN + "You added " + ChatColor.YELLOW + newMemberName + ChatColor.GREEN
-				+ " as a member to the network " + ChatColor.YELLOW + networkName);
+		if (!network.isMember(newMember)) {
+			network.addMember(newMember);
+			networkData.saveNetwork(network);
+			sender.sendMessage(ChatColor.GREEN + "You added " + ChatColor.YELLOW + newMemberName + ChatColor.GREEN
+					+ " as a member to the network " + ChatColor.YELLOW + networkName);
+		} else {
+			sender.sendMessage(ChatColor.YELLOW + newMemberName + ChatColor.RED + " is already a member of the network "
+					+ ChatColor.YELLOW + networkName);
+		}
+
 	}
 
 	private void priorityCommand(CommandSender sender, String[] args) {
