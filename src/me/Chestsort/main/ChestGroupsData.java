@@ -79,7 +79,7 @@ public class ChestGroupsData {
 	}
 
 	public boolean isValidGroup(String groupName) {
-		return (groups.get(groupName) != null ? true : false);
+		return groups.get(groupName) != null ? true : false;
 	}
 
 	public FileConfiguration getGroups() {

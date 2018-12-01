@@ -72,7 +72,6 @@ public class NetworkData {
 	}
 
 	public void saveNetwork(Network network) {
-		// plugin.debugMessage("saveNetwork");
 		UUID uuid = network.owner;
 
 		String path = "Owners." + uuid + ".NetworkNames." + network.networkName;
@@ -89,8 +88,6 @@ public class NetworkData {
 		// SortChests
 		if (network.sortChests.isEmpty()) {
 			getNetworks().set(path + ".Chests", new ArrayList<String>());
-			getNetworks().set(path + ".Chests", new ArrayList<String>());
-			// plugin.debugMessage("\n\nSort chests empty for\n\n");
 		} else {
 			for (SortChest sortChest : network.sortChests) {
 				// Chest
@@ -104,7 +101,6 @@ public class NetworkData {
 				int signX = new BigDecimal(signBlock.getLocation().getX()).intValue();
 				int signY = (int) signBlock.getLocation().getY();
 				int signZ = new BigDecimal(signBlock.getLocation().getZ()).intValue();
-//				String groupName = ((Sign) signBlock.getState()).getLine(1); //if fail
 
 				String group = sortChest.group;
 				int priority = sortChest.priority;
@@ -119,22 +115,23 @@ public class NetworkData {
 			}
 		}
 
-		// plugin.debugMessage(network.depositChests.size() + "DCSAVE");
-
 		// Deposit Chests
-		for (Map.Entry<Block, NetworkItem> depositChest : network.depositChests.entrySet()) {
-			Block chest = depositChest.getValue().chest;
-			Block sign = depositChest.getValue().sign;
-			int x = new BigDecimal(chest.getLocation().getX()).intValue();
-			int z = new BigDecimal(chest.getLocation().getZ()).intValue();
-			int signX = new BigDecimal(sign.getLocation().getX()).intValue();
-			int signZ = new BigDecimal(sign.getLocation().getZ()).intValue();
+		if (network.depositChests.isEmpty()) {
+			getNetworks().set(path + ".DepositChests", new ArrayList<String>());
+		} else {
+			for (Map.Entry<Block, NetworkItem> depositChest : network.depositChests.entrySet()) {
+				Block chest = depositChest.getValue().chest;
+				Block sign = depositChest.getValue().sign;
+				int x = new BigDecimal(chest.getLocation().getX()).intValue();
+				int z = new BigDecimal(chest.getLocation().getZ()).intValue();
+				int signX = new BigDecimal(sign.getLocation().getX()).intValue();
+				int signZ = new BigDecimal(sign.getLocation().getZ()).intValue();
 
-			String chestPath = path + ".DepositChests." + chest.getWorld().getName() + "," + x + ","
-					+ (int) chest.getLocation().getY() + "," + z;
-//			plugin.debugMessage(chestPath);
-			getNetworks().set(chestPath + ".Sign",
-					sign.getWorld().getName() + "," + signX + "," + (int) sign.getLocation().getY() + "," + signZ);
+				String chestPath = path + ".DepositChests." + chest.getWorld().getName() + "," + x + ","
+						+ (int) chest.getLocation().getY() + "," + z;
+				getNetworks().set(chestPath + ".Sign",
+						sign.getWorld().getName() + "," + signX + "," + (int) sign.getLocation().getY() + "," + signZ);
+			}
 		}
 
 		// remove later maybe?
@@ -267,6 +264,10 @@ public class NetworkData {
 		networks.put(networkName, network);
 	}
 
+	public Network getNetwork(String networkName) {
+		return networks.get(networkName);
+	}
+
 	public void removeSortChestFromNetwork(Network network, Block chestBlock) {
 		int x = new BigDecimal(chestBlock.getLocation().getX()).intValue();
 		int y = (int) chestBlock.getLocation().getY();
@@ -334,5 +335,11 @@ public class NetworkData {
 				return;
 			}
 		}
+	}
+
+	public void removeNetwork(Network network) {
+		getNetworks().set("Owners." + network.owner + ".NetworkNames." + network.networkName, null);
+		networks.remove(network.networkName);
+		saveNetworkData();
 	}
 }

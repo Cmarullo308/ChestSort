@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
+import org.bukkit.entity.Player;
+
+import net.md_5.bungee.api.ChatColor;
 
 public class Network {
 	ChestSort plugin;
@@ -44,10 +48,10 @@ public class Network {
 	}
 
 	public static void sortChestsByPriority(ArrayList<SortChest> list, int lowerIndex, int higherIndex) {
-		if(list.size() < 2) {
+		if (list.size() < 2) {
 			return;
 		}
-		
+
 		int i = lowerIndex;
 		int j = higherIndex;
 		SortChest pivot = list.get(lowerIndex + (higherIndex - lowerIndex) / 2);
@@ -70,6 +74,47 @@ public class Network {
 			sortChestsByPriority(list, lowerIndex, j);
 		if (i < higherIndex)
 			sortChestsByPriority(list, i, higherIndex);
+	}
+
+	public boolean isOwner(Player player) {
+		return owner.equals(player.getUniqueId());
+	}
+
+	public boolean isMember(Player player) {
+		return isMember(player.getUniqueId());
+	}
+
+	public boolean isMember(UUID playerID) {
+		for (UUID id : members) {
+			if (playerID.equals(id)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public void disableAllDepositChests() {
+		Sign sign;
+		for (NetworkItem chest : depositChests.values()) {
+			sign = (Sign) chest.sign.getState();
+			plugin.debugMessage(sign.getLine(0));
+			sign.setLine(3, sign.getLine(3) + ChatColor.RED + "(DISABLED)");
+			sign.update();
+		}
+
+		depositChests = new HashMap<Block, NetworkItem>();
+	}
+
+	public void disableAllSortChests() {
+		Sign sign;
+		for (SortChest chest : sortChests) {
+			sign = (Sign) chest.sign.getState();
+			sign.setLine(3, sign.getLine(3) + ChatColor.RED + "(DISABLED)");
+			sign.update();
+		}
+
+		sortChests = new ArrayList<SortChest>();
 	}
 
 	public NetworkItem getDepositChest(Block chest) {

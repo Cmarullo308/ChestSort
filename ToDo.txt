@@ -5,8 +5,9 @@ Check that chests and signs are still there every day
 prevent infinite loop when sort. timer?
 make doublchest fix bs check if sign starts with star
 putting just "*" on a sign doesnt make a network
-
-put thread back
+cant put another network sign on the other side of a doublechest already in a newtwork?
+console can add network
+remove owner ids from config file if they have 0 networks
 
 
 comparators

@@ -25,7 +25,7 @@ public class ChestSort extends JavaPlugin {
 		getConfig().options().copyDefaults(true);
 		saveConfig();
 
-		checkConfigData();
+		loadAndCheckConfigData();
 
 		networkData.loadNetworkData();
 		groupData.setup();
@@ -36,8 +36,9 @@ public class ChestSort extends JavaPlugin {
 		tempStuff();
 	}
 
-	private void checkConfigData() {
-		boolean error = false;
+	private void loadAndCheckConfigData() {
+		defaultChestPriority = getConfig().getInt("default_chest_priority");
+		getConfig().set("default_chest_priority", defaultChestPriority);
 
 		try {
 			sortSound = Sound.valueOf(getConfig().getString("sort_sound"));
@@ -45,21 +46,17 @@ public class ChestSort extends JavaPlugin {
 			getLogger().info("Invalid sort_sound, resetting to default");
 			getConfig().set("sort_sound", "UI_TOAST_IN");
 			sortSound = Sound.UI_TOAST_IN;
-			error = true;
 		}
-		
+
 		try {
 			notEnoughSpaceSound = Sound.valueOf(getConfig().getString("not_enough_space_sound"));
 		} catch (IllegalArgumentException e) {
 			getLogger().info("Invalid not_enough_space_sound, resetting to default");
 			getConfig().set("not_enough_space_sound", "ENTITY_BAT_TAKEOFF");
 			sortSound = Sound.ENTITY_BAT_TAKEOFF;
-			error = true;
 		}
 
-		if (error) {
-			saveConfig();
-		}
+		saveConfig();
 	}
 
 	private void tempStuff() {
