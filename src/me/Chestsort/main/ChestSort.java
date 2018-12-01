@@ -16,8 +16,13 @@ public class ChestSort extends JavaPlugin {
 	NetworkData networkData = new NetworkData(this);
 	ChestGroupsData groupData = new ChestGroupsData(this);
 
+	// Sounds
 	Sound sortSound;
+	boolean sortSoundEnabled;
 	Sound notEnoughSpaceSound;
+	boolean notEnoughSpaceSoundEnabled;
+	// ------
+
 	int defaultChestPriority;
 
 	final ChatColor signNetworkColor = ChatColor.DARK_BLUE;
@@ -60,10 +65,33 @@ public class ChestSort extends JavaPlugin {
 			sortSound = Sound.ENTITY_BAT_TAKEOFF;
 		}
 
+		sortSoundEnabled = getConfig().getBoolean("sort_sound_enabled");
+		notEnoughSpaceSoundEnabled = getConfig().getBoolean("not_enough_space_sound_enabled");
+
 		saveConfig();
 	}
 
+	public boolean setSoundEnabled(String soundName, boolean enabled) {
+		boolean worked = false;
+		if (soundName.equalsIgnoreCase("sort_sound")) {
+			sortSoundEnabled = enabled;
+			worked = true;
+		} else if (soundName.equalsIgnoreCase("not_enough_space_sound")) {
+			notEnoughSpaceSoundEnabled = enabled;
+			worked = true;
+		}
+
+		if (worked) {
+			getConfig().set(soundName + "_enabled", enabled);
+			saveConfig();
+			return true;
+		}
+		
+		return worked;
+	}
+
 	private void tempStuff() {
+
 	}
 
 	@Override
@@ -74,7 +102,7 @@ public class ChestSort extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		
+
 	}
 
 	public void debugMessage(String str) {

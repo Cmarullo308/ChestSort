@@ -144,10 +144,12 @@ public class ChestSortListener implements Listener {
 		switch (brokenBlock.getType()) {
 		case CHEST:
 		case WALL_SIGN:
-			networkData.checkAndRemoveChest(brokenBlock);
+			if(!networkData.checkAndRemoveChest(brokenBlock, event.getPlayer())) {
+				event.setCancelled(true);
+			}
 			break;
 		default:
-			return;
+			break;
 		}
 	}
 }

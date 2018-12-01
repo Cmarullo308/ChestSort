@@ -87,12 +87,13 @@ public class Sorter {
 
 		// Sends sound to player
 		if (whoClicked instanceof Player) {
-			if (Boolean.parseBoolean(plugin.getConfig().getString("sort_sound_enabled"))) {
-				if (!contentsStartedEmpty) {
-					if (notEnoughSpace) {
+			if (!contentsStartedEmpty) {
+				if (notEnoughSpace) {
+					if (plugin.notEnoughSpaceSoundEnabled) {
 						((Player) whoClicked).playSound(whoClicked.getLocation(), plugin.notEnoughSpaceSound, 2f, 1f);
-						whoClicked.sendMessage(ChatColor.RED + "No space in the network for these items");
-					} else {
+					}
+				} else {
+					if (plugin.sortSoundEnabled) {
 						((Player) whoClicked).playSound(whoClicked.getLocation(), plugin.sortSound, 2f, 1f);
 					}
 				}

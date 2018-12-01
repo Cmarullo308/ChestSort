@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
@@ -30,34 +31,231 @@ public class CommandHandler {
 			networkCommands(sender, args);
 			break;
 		case "priority":
-			priorityCommand(sender, args);
+			priorityCommands(sender, args);
+			break;
+		case "group":
+			groupCommands(sender, args);
+			break;
+		case "sound":
+			soundCommands(sender, args);
 			break;
 		case "test":
 			testCommand(sender, args);
 			break;
 		default:
+			sender.sendMessage(ChatColor.RED + "Invalid arguements");
 			break;
 		}
 
 		return true;
 	}
 
+	private void groupCommands(CommandSender sender, String[] args) {
+		String groupName = args[1];
+		String action = args[2];
+
+		if (action.equalsIgnoreCase("create")) {
+			createGroup(sender, groupName, action);
+		} else if (action.equalsIgnoreCase("additem")) {
+			addToGroup(sender, args);
+		} else if (action.equalsIgnoreCase("removeitem")) {
+			removeFromGroup(sender, args);
+		} else {
+			sender.sendMessage(ChatColor.RED + "Invalid arguement");
+			return;
+		}
+	}
+
+	private void removeFromGroup(CommandSender sender, String[] args) {
+		Material material;
+		String groupName = args[1];
+		String itemName = args[3];
+	}
+
+	private void addToGroup(CommandSender sender, String[] args) {
+		Material material;
+		String groupName = args[1];
+		String itemName = args[3].toUpperCase();
+
+		try {
+			material = Material.valueOf(itemName);
+		} catch (IllegalArgumentException e) {
+			sender.sendMessage(ChatColor.RED + "Invalid item name " + ChatColor.YELLOW + itemName);
+			return;
+		}
+
+		int result = groupData.addItemToGroup(groupName, material);
+		if (result == -1) {
+			sender.sendMessage(ChatColor.RED + "No group named " + ChatColor.YELLOW + groupName);
+			return;
+		} else if (result == -2) {
+			sender.sendMessage(ChatColor.RED + "The item " + ChatColor.YELLOW + itemName + ChatColor.RED
+					+ " is already in a group");
+			return;
+		}
+
+		sender.sendMessage(ChatColor.GREEN + "Added the item " + ChatColor.YELLOW + itemName + ChatColor.GREEN
+				+ " to the group " + ChatColor.YELLOW + groupName);
+	}
+
+	private void createGroup(CommandSender sender, String groupName, String action) {
+		// come back
+	}
+
+	private void soundCommands(CommandSender sender, String[] args) {
+		if (args.length == 2) {
+			if (args[1].equalsIgnoreCase("list")) {
+				listSounds(sender, args);
+			} else {
+				sender.sendMessage(ChatColor.RED + "Invalid arguements");
+				return;
+			}
+		} else if (args.length == 4) {
+			if (args[2].equalsIgnoreCase("set")) {
+				setSound(sender, args);
+				return;
+			} else {
+				sender.sendMessage(ChatColor.RED + "Invalid arguements");
+				return;
+			}
+		} else if (args.length == 3) {
+			if (args[2].equalsIgnoreCase("get")) {
+				getSound(sender, args);
+				return;
+			} else if (args[2].equalsIgnoreCase("enable") || args[2].equalsIgnoreCase("disable")) {
+				enableDisableSound(sender, args);
+				return;
+			} else {
+				sender.sendMessage(ChatColor.RED + "Invalid arguements");
+				return;
+			}
+		} else {
+			sender.sendMessage(ChatColor.RED
+					+ "Invalid number of arguements. /ChestSort sound <whichSound> <set | get | enable | disable> [sound]");
+			return;
+		}
+	}
+
+	private void enableDisableSound(CommandSender sender, String[] args) {
+		String soundName = args[1];
+		boolean enabled;
+		if (args[2].equalsIgnoreCase("enable")) {
+			enabled = true;
+		} else if (args[2].equalsIgnoreCase("disable")) {
+			enabled = false;
+		} else {
+			sender.sendMessage(ChatColor.RED + "Invalid arguement");
+			return;
+		}
+
+		if (!plugin.setSoundEnabled(soundName, enabled)) {
+			sender.sendMessage(ChatColor.RED + "Invalid sound name");
+			return;
+		}
+
+		if (enabled) {
+			sender.sendMessage(ChatColor.GREEN + soundName + " enabled");
+		} else {
+			sender.sendMessage(ChatColor.GREEN + soundName + " disabled");
+		}
+	}
+
+	private void listSounds(CommandSender sender, String[] args) {
+		String message = ChatColor.DARK_BLUE + "---------------------------\n";
+
+		message += ChatColor.GREEN + "Sort_sound: " + ChatColor.YELLOW + plugin.sortSound.toString() + "\n";
+		message += ChatColor.GREEN + "Not_enough_space_sound: " + ChatColor.YELLOW
+				+ plugin.notEnoughSpaceSound.toString() + "\n";
+		message += ChatColor.DARK_BLUE + "---------------------------";
+
+		sender.sendMessage(message);
+	}
+
+	private void getSound(CommandSender sender, String[] args) {
+		String soundName = args[1];
+		if (soundName.equalsIgnoreCase("sort_sound")) {
+			sender.sendMessage(ChatColor.GREEN + "Sort_sound: " + ChatColor.YELLOW + plugin.sortSound.toString());
+			return;
+		} else if (soundName.equalsIgnoreCase("not_enough_space_sound")) {
+			sender.sendMessage(ChatColor.GREEN + "not_enough_space_sound: " + ChatColor.YELLOW
+					+ plugin.notEnoughSpaceSound.toString());
+			return;
+		} else {
+			sender.sendMessage(ChatColor.RED + "Invalud sound name");
+			return;
+		}
+	}
+
+	private void setSound(CommandSender sender, String[] args) {
+		String soundName = args[1];
+		String sound = args[3];
+
+		if (soundName.equalsIgnoreCase("sort_sound")) {
+			try {
+				plugin.sortSound = Sound.valueOf(sound);
+				plugin.getConfig().set("sort_sound", plugin.sortSound.toString());
+			} catch (IllegalArgumentException e) {
+				sender.sendMessage(ChatColor.RED + "Invalid sound " + ChatColor.RED + sound);
+				return;
+			}
+		} else if (soundName.equalsIgnoreCase("not_enough_space_sound")) {
+			try {
+				plugin.notEnoughSpaceSound = Sound.valueOf(sound);
+				plugin.getConfig().set("sort_sound", plugin.notEnoughSpaceSound.toString());
+			} catch (IllegalArgumentException e) {
+				sender.sendMessage(ChatColor.RED + "Invalid sound " + ChatColor.RED + sound);
+				return;
+			}
+		} else {
+			sender.sendMessage(ChatColor.RED + "Invalid sound name " + ChatColor.YELLOW + soundName);
+			return;
+		}
+
+		plugin.saveConfig();
+		sender.sendMessage(ChatColor.YELLOW + soundName + ChatColor.GREEN + " set to " + ChatColor.YELLOW + sound);
+	}
+
 	private void networkCommands(CommandSender sender, String[] args) {
-		if (args.length == 3) {
+		if (args.length == 2) {
+			if (args[1].equalsIgnoreCase("list")) {
+				listNetworks(sender, args);
+			}
+		} else if (args.length == 3) {
 			if (args[2].equalsIgnoreCase("create")) {
 				createNewNetwork(sender, args[1]);
 			} else if (args[2].equalsIgnoreCase("remove")) {
 				removeNetwork(sender, args[1]);
 			} else if (args[2].equalsIgnoreCase("info")) {
 				printNetworkInfo(sender, args[1]);
+			} else {
+				sender.sendMessage(ChatColor.RED + "Invalid arguement");
+				return;
 			}
 		} else if (args.length == 5) {
 			if (args[2].equalsIgnoreCase("members")) {
 				membersCommands(sender, args);
+			} else {
+				sender.sendMessage(ChatColor.RED + "Invalid arguement");
+				return;
 			}
 		} else {
 			sender.sendMessage(ChatColor.RED + "Invalid number of arguements");
 		}
+	}
+
+	private void listNetworks(CommandSender sender, String[] args) {
+		String message = ChatColor.GREEN + "Networks: [";
+		for (Network network : networkData.networks.values()) {
+			message += ChatColor.WHITE + network.networkName + ChatColor.GREEN + ", ";
+		}
+
+		if (networkData.networks.size() > 0) {
+			message = message.substring(0, message.length() - 2);
+		}
+
+		message += "]";
+
+		sender.sendMessage(message);
 	}
 
 	private void membersCommands(CommandSender sender, String[] args) {
@@ -100,7 +298,6 @@ public class CommandHandler {
 			sender.sendMessage(ChatColor.YELLOW + memberName + ChatColor.RED + " is not a member of the network "
 					+ ChatColor.YELLOW + networkName);
 		}
-
 	}
 
 	private void addMember(CommandSender sender, String[] args) {
@@ -138,7 +335,7 @@ public class CommandHandler {
 
 	}
 
-	private void priorityCommand(CommandSender sender, String[] args) {
+	private void priorityCommands(CommandSender sender, String[] args) {
 		if (args.length != 2 && args.length != 3) {
 			sender.sendMessage(ChatColor.RED + "Invalid number of arguements. /SortChest <priority> <set | get>");
 			return;

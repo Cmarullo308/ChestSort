@@ -55,6 +55,12 @@ public class ChestGroupsData {
 		saveGroupData();
 	}
 
+	public void saveGroup(String groupName) {
+		groupsFileConfig.set("Groups." + groupName, groups.get(groupName));
+
+		saveGroupData();
+	}
+
 	public void loadGroups() {
 		Set<String> groupNames;
 		try {
@@ -78,8 +84,46 @@ public class ChestGroupsData {
 		}
 	}
 
+	public boolean itemIsInAGroup(Material item) {
+		for (List<String> group : groups.values()) {
+			if (group.contains(item.toString())) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public boolean isValidGroup(String groupName) {
 		return groups.get(groupName) != null ? true : false;
+	}
+
+	/**
+	 * 
+	 * @param groupName
+	 * @param item
+	 * @return 0 if successful, -2 if the items already in a group, -1 if the group doesn't exist
+	 */
+	public int addItemToGroup(String groupName, Material item) {
+		if (itemIsInAGroup(item)) {
+			return -2;
+		}
+
+		if (!isValidGroup(groupName)) {
+			return -1;
+		}
+
+		groups.get(groupName).add(item.toString());
+		saveGroup(groupName);
+		return 0;
+	}
+
+	public boolean addGroup(String groupName) {
+		if (isValidGroup(groupName)) {
+			return false;
+		}
+
+		return false;
 	}
 
 	public FileConfiguration getGroups() {

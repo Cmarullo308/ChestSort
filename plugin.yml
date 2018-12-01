@@ -5,6 +5,7 @@ version: 1.0
 api-version: 1.13
 description: Sort Chests by Type
 commands:
-   SC:
-      usage: /<SC> [command]
+   ChestSort:
+      aliases: [sc]
+      usage: /<SortChest> [command]
       description: Main command
