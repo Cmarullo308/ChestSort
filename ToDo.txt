@@ -1,4 +1,5 @@
 check for items in multiple groups
+can't make misc group in file or command
 if not chests or members, delete network?
 can't break other peoples signs/chests
 Check that chests and signs are still there every day

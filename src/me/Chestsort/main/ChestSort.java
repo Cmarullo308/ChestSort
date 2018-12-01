@@ -8,6 +8,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import net.md_5.bungee.api.ChatColor;
+
 public class ChestSort extends JavaPlugin {
 	boolean debugMessages = true;
 	boolean debug = true;
@@ -17,6 +19,8 @@ public class ChestSort extends JavaPlugin {
 	Sound sortSound;
 	Sound notEnoughSpaceSound;
 	int defaultChestPriority;
+
+	final ChatColor signNetworkColor = ChatColor.DARK_BLUE;
 
 	CommandHandler commandHandler = new CommandHandler(this, networkData, groupData);
 
@@ -70,8 +74,7 @@ public class ChestSort extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-//		networkData.saveNetworkData();
-//		groupData.saveGroupData();
+		
 	}
 
 	public void debugMessage(String str) {

@@ -3,6 +3,9 @@ package me.Chestsort.main;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -26,6 +29,9 @@ public class CommandHandler {
 		case "network":
 			networkCommands(sender, args);
 			break;
+		case "priority":
+			priorityCommand(sender, args);
+			break;
 		case "test":
 			testCommand(sender, args);
 			break;
@@ -34,6 +40,88 @@ public class CommandHandler {
 		}
 
 		return true;
+	}
+
+	private void priorityCommand(CommandSender sender, String[] args) {
+		if (args.length != 2 && args.length != 3) {
+			sender.sendMessage(ChatColor.RED + "Invalid number of arguements. /SortChest <priority> <set | get>");
+			return;
+		} else if (!(sender instanceof Player)) {
+			mustBeAPlayerMessage(sender);
+			return;
+		}
+
+		if (args[1].equalsIgnoreCase("set")) {
+			setPriority(sender, args);
+		} else if (args[1].equalsIgnoreCase("get")) {
+			getPriority(sender, args);
+		}
+	}
+
+	private void getPriority(CommandSender sender, String[] args) {
+		Player player = (Player) sender;
+		Block lookingAt = player.getTargetBlockExact(20);
+		SortChest sortChest;
+
+		if (lookingAt.getType() == Material.CHEST) {
+			sortChest = networkData
+					.getSortChestBySign((Sign) lookingAt.getLocation().clone().add(0, 1, 0).getBlock().getState());
+		} else if (lookingAt.getType() == Material.WALL_SIGN) {
+			sortChest = networkData.getSortChestByChestBlock(lookingAt);
+		} else {
+			sender.sendMessage(ChatColor.RED + "Must be looking at a chest or sign");
+			return;
+		}
+
+		// Chest is not part of a network
+		if (sortChest == null) {
+			player.sendMessage(ChatColor.RED + "This chest is not part of a network or is a deposit chest");
+			return;
+		}
+
+		player.sendMessage(ChatColor.GREEN + "Priority: " + ChatColor.YELLOW + sortChest.priority);
+	}
+
+	private void setPriority(CommandSender sender, String[] args) {
+		Player player = (Player) sender;
+		Block lookingAt = player.getTargetBlockExact(20);
+		SortChest sortChest;
+
+		if (lookingAt.getType() == Material.CHEST) {
+			sortChest = networkData
+					.getSortChestBySign((Sign) lookingAt.getLocation().clone().add(0, 1, 0).getBlock().getState());
+		} else if (lookingAt.getType() == Material.WALL_SIGN) {
+			sortChest = networkData.getSortChestByChestBlock(lookingAt);
+		} else {
+			sender.sendMessage(ChatColor.RED + "Must be looking at a chest or sign");
+			return;
+		}
+
+		// Chest is not part of a network
+		if (sortChest == null) {
+			player.sendMessage(ChatColor.RED + "This chest is not part of a network or is a deposit chest");
+			return;
+		}
+
+		Network network = sortChest.getNetwork();
+		if (!network.isOwner(player) && !network.isMember(player)) {
+			player.sendMessage(ChatColor.RED + "Must be the owner or a memebr of the network " + ChatColor.YELLOW
+					+ network.networkName + ChatColor.RED + " to modify its chests");
+			return;
+		}
+
+		try {
+			sortChest.priority = Integer.parseInt(args[2]);
+		} catch (NumberFormatException e) {
+			player.sendMessage(ChatColor.RED + "Invalid priority number. Must be an integer");
+			return;
+		}
+
+		sortChest.updateSign();
+
+		networkData.saveNetwork(network);
+
+		player.sendMessage(ChatColor.GREEN + "Chest priority set to " + ChatColor.YELLOW + sortChest.priority);
 	}
 
 	private void networkCommands(CommandSender sender, String[] args) {
@@ -73,10 +161,12 @@ public class CommandHandler {
 			networkInfoMessage += ChatColor.YELLOW + Bukkit.getOfflinePlayer(memberId).getName() + ChatColor.WHITE
 					+ ",";
 		}
-		networkInfoMessage.substring(0, networkInfoMessage.length() - 1);
+		if (network.members.size() > 0) {
+			networkInfoMessage = networkInfoMessage.substring(0, networkInfoMessage.length() - 1);
+		}
 		networkInfoMessage += "]";
 		networkInfoMessage += ChatColor.DARK_BLUE + "\n---------------------------";
-		
+
 		sender.sendMessage(networkInfoMessage);
 	}
 

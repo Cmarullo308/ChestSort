@@ -38,7 +38,6 @@ public class Network {
 	public ArrayList<SortChest> getSortChestsOfGroup(String groupName) {
 		ArrayList<SortChest> chests = new ArrayList<SortChest>();
 		for (SortChest chest : sortChests) {
-//			plugin.debugMessage("\"" + groupName + "\" : \"" + chest.group + "\"");
 			if (chest.group.equals(groupName)) {
 				chests.add(chest);
 			}
@@ -126,7 +125,7 @@ public class Network {
 	}
 
 	public void addSortChest(Block chest, Block sign, String groupName, int priority) {
-		sortChests.add(new SortChest(chest, sign, groupName, priority));
+		sortChests.add(new SortChest(chest, sign, groupName, priority, this));
 	}
 
 	public void addDepositChest(Network network, Block chestBlock, Block signBlock) {

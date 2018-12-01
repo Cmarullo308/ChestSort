@@ -264,6 +264,43 @@ public class NetworkData {
 		networks.put(networkName, network);
 	}
 
+	public SortChest getSortChestByChestBlock(Block chestBlock) {
+		if (chestBlock.getLocation().getBlock().getType() == Material.WALL_SIGN) {
+			Sign sign = (Sign) chestBlock.getLocation().getBlock().getState();
+			return getSortChestBySign(sign);
+		}
+
+		return null;
+	}
+
+	public SortChest getSortChestBySign(Sign sign) {
+		if (!sign.getLine(0).contains("*")) {
+			return null;
+		}
+
+		int lastStarIndex = sign.getLine(0).lastIndexOf("*");
+		if (sign.getLine(0).length() - 1 == lastStarIndex) {
+			return null;
+		}
+		String networkName = sign.getLine(0).substring(lastStarIndex + 1);
+
+		if (!networkExists(networkName)) {
+			return null;
+		}
+
+		Network network = getNetwork(networkName);
+
+		Block chestBlock = sign.getLocation().clone().add(0, -1, 0).getBlock();
+
+		for (SortChest chest : network.sortChests) {
+			if (chest.block.equals(chestBlock)) {
+				return chest;
+			}
+		}
+
+		return null;
+	}
+
 	public Network getNetwork(String networkName) {
 		return networks.get(networkName);
 	}
@@ -315,6 +352,8 @@ public class NetworkData {
 						Sign sign = (Sign) chestBlock.getLocation().add(0, 1, 0).getBlock().getState();
 						sign.setLine(0, "");
 						sign.setLine(1, "");
+						sign.setLine(2, "");
+						sign.setLine(3, "");
 						sign.update();
 					}
 					removeSortChestFromNetwork(network, chestBlock);
@@ -329,6 +368,7 @@ public class NetworkData {
 					sign.setLine(0, "");
 					sign.setLine(1, "");
 					sign.setLine(2, "");
+					sign.setLine(3, "");
 					sign.update();
 				}
 				removeDepositChestFromNetwork(network, chestBlock);
