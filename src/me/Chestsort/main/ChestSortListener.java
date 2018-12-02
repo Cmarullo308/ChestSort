@@ -126,7 +126,7 @@ public class ChestSortListener implements Listener {
 	}
 
 	@EventHandler
-	public final void onInventoryMove(InventoryClickEvent event) {
+	public void onInventoryClickEvent(InventoryClickEvent event) {
 		if (event.getInventory().getType() == InventoryType.CHEST) {
 			Block inventoryBlock = event.getInventory().getLocation().getBlock();
 
@@ -141,6 +141,24 @@ public class ChestSortListener implements Listener {
 			autoSortThread.start();
 		}
 	}
+
+//Probably won't need again
+//	@EventHandler
+//	public final void onInventoryMove(InventoryClickEvent event) {
+//		if (event.getInventory().getType() == InventoryType.CHEST) {
+//			Block inventoryBlock = event.getInventory().getLocation().getBlock();
+//
+//			Thread autoSortThread = new Thread() {
+//				@Override
+//				public void run() {
+//					Sorter.AutoSort(inventoryBlock, event.getInventory(), event.getWhoClicked(), plugin, networkData,
+//							groupsData);
+//				}
+//			};
+//
+//			autoSortThread.start();
+//		}
+//	}
 
 	@EventHandler
 	public void onInventoryMoveItemEvent(InventoryMoveItemEvent event) {

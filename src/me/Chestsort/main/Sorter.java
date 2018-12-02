@@ -18,9 +18,6 @@ import org.bukkit.inventory.ItemStack;
 public class Sorter {
 	public static void AutoSort(Block fromBlock, Inventory inventory, HumanEntity whoClicked, ChestSort plugin,
 			NetworkData networkData, ChestGroupsData groupsData) {
-		Timer testTimer = new Timer();
-		testTimer.start();
-
 		fromBlock = checkChest(fromBlock, plugin, networkData);
 
 		Network network = networkData.getDepositChestNetwork(fromBlock);
@@ -99,9 +96,6 @@ public class Sorter {
 				}
 			}
 		}
-		
-		testTimer.stop();
-		plugin.debugMessage("~~~~~~~" + testTimer.getTimeFormated());
 	}
 
 	private static Block checkChest(Block fromBlock, ChestSort plugin, NetworkData networkData) {
