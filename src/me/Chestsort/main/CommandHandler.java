@@ -1,5 +1,6 @@
 package me.Chestsort.main;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -54,22 +55,100 @@ public class CommandHandler {
 		String groupName = args[1];
 		String action = args[2];
 
-		if (action.equalsIgnoreCase("create")) {
-			createGroup(sender, groupName, action);
-		} else if (action.equalsIgnoreCase("additem")) {
-			addToGroup(sender, args);
-		} else if (action.equalsIgnoreCase("removeitem")) {
-			removeFromGroup(sender, args);
+		if (args.length == 4) {
+			if (action.equalsIgnoreCase("additem")) {
+				addToGroup(sender, args);
+			} else if (action.equalsIgnoreCase("removeitem")) {
+				removeFromGroup(sender, args);
+			} else {
+				sender.sendMessage(ChatColor.RED + "Invalid arguement");
+				return;
+			}
+		} else if (args.length == 3) {
+			if (action.equalsIgnoreCase("create")) {
+				createGroup(sender, groupName);
+			} else if (action.equalsIgnoreCase("remove")) {
+				removeGroup(sender, groupName);
+			} else if (action.equalsIgnoreCase("list")) {
+				listGroupItems(sender, groupName);
+			} else {
+				sender.sendMessage(ChatColor.RED + "Invalid arguements");
+				return;
+			}
 		} else {
-			sender.sendMessage(ChatColor.RED + "Invalid arguement");
+			sender.sendMessage(ChatColor.RED + "Invalid number of arguements");
 			return;
 		}
+	}
+
+	private void listGroupItems(CommandSender sender, String groupName) {
+		List<String> groupItems = groupData.getGroup(groupName);
+
+		if (groupItems == null) {
+			sender.sendMessage(
+					ChatColor.RED + "The group " + ChatColor.YELLOW + groupName + ChatColor.RED + " does not exist");
+			return;
+		}
+
+		String message = ChatColor.YELLOW + groupName + ": " + ChatColor.GREEN + "[";
+		for (String itemName : groupItems) {
+			message += ChatColor.YELLOW + itemName + ChatColor.GREEN + ", ";
+		}
+
+		if (groupItems.size() > 0) {
+			message = message.substring(0, message.length() - 2);
+		}
+
+		message += ChatColor.GREEN + "]";
+
+		sender.sendMessage(message);
+	}
+
+	private void removeGroup(CommandSender sender, String groupName) {
+		if (!groupData.removeGroup(groupName)) {
+			sender.sendMessage(ChatColor.RED + "No group named " + ChatColor.YELLOW + groupName);
+			return;
+		}
+
+		sender.sendMessage(ChatColor.GREEN + "Removed the group: " + ChatColor.YELLOW + groupName);
+	}
+
+	private void createGroup(CommandSender sender, String groupName) {
+		if (groupName.equalsIgnoreCase("misc")) {
+			sender.sendMessage(ChatColor.RED + "The group cannot be named " + ChatColor.YELLOW + "Misc");
+			return;
+		}
+
+		if (!groupData.addGroup(groupName)) {
+			sender.sendMessage(
+					ChatColor.RED + "The group " + ChatColor.YELLOW + groupName + ChatColor.RED + " already exists");
+			return;
+		}
+
+		sender.sendMessage(ChatColor.GREEN + "Created new group: " + ChatColor.YELLOW + groupName);
 	}
 
 	private void removeFromGroup(CommandSender sender, String[] args) {
 		Material material;
 		String groupName = args[1];
 		String itemName = args[3];
+
+		try {
+			material = Material.valueOf(itemName);
+		} catch (IllegalArgumentException e) {
+			sender.sendMessage(ChatColor.RED + "Invalid item name " + ChatColor.YELLOW + itemName);
+			return;
+		}
+
+		if (!groupData.itemIsInAGroup(material)) {
+			sender.sendMessage(ChatColor.YELLOW + material.toString() + ChatColor.RED + " is not in any group");
+			return;
+		}
+
+		groupData.removeFromGroup(material);
+
+		sender.sendMessage(ChatColor.GREEN + "The item " + ChatColor.YELLOW + material.toString() + ChatColor.GREEN
+				+ " was removed from the group " + ChatColor.YELLOW + groupName);
 	}
 
 	private void addToGroup(CommandSender sender, String[] args) {
@@ -96,10 +175,6 @@ public class CommandHandler {
 
 		sender.sendMessage(ChatColor.GREEN + "Added the item " + ChatColor.YELLOW + itemName + ChatColor.GREEN
 				+ " to the group " + ChatColor.YELLOW + groupName);
-	}
-
-	private void createGroup(CommandSender sender, String groupName, String action) {
-		// come back
 	}
 
 	private void soundCommands(CommandSender sender, String[] args) {

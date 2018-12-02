@@ -2,7 +2,7 @@ package me.Chestsort.main;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -56,7 +56,11 @@ public class ChestGroupsData {
 	}
 
 	public void saveGroup(String groupName) {
-		groupsFileConfig.set("Groups." + groupName, groups.get(groupName));
+		if (isValidGroup(groupName)) {
+			groupsFileConfig.set("Groups." + groupName, groups.get(groupName));
+		} else {
+			groupsFileConfig.set("Groups." + groupName, null);
+		}
 
 		saveGroupData();
 	}
@@ -71,17 +75,24 @@ public class ChestGroupsData {
 
 		// For each group
 		for (String group : groupNames) {
-			List<String> newMaterialList = groupsFileConfig.getStringList("Groups." + group);
-			for (int i = 0; i < newMaterialList.size(); i++) {
-				try {
-					Material.valueOf(newMaterialList.get(i));
-				} catch (IllegalArgumentException e) {
-					plugin.getLogger().info("Invalid material: \"" + newMaterialList.get(i) + "\", Ignoring");
-					newMaterialList.remove(i);
+			if (!group.equalsIgnoreCase("Misc")) {
+				List<String> newMaterialList = groupsFileConfig.getStringList("Groups." + group);
+				for (int i = 0; i < newMaterialList.size(); i++) {
+					try {
+						Material.valueOf(newMaterialList.get(i));
+					} catch (IllegalArgumentException e) {
+						plugin.getLogger().info("Invalid material: \"" + newMaterialList.get(i) + "\", Ignoring");
+						newMaterialList.remove(i);
+					}
 				}
+				groups.put(group, newMaterialList);
+			} else {
+				groupsFileConfig.set("Groups." + group, null);
+				plugin.getLogger().info("--Groups cannot be names \"Misc\", removing--");
 			}
-			groups.put(group, newMaterialList);
 		}
+
+		saveGroups();
 	}
 
 	public boolean itemIsInAGroup(Material item) {
@@ -94,6 +105,10 @@ public class ChestGroupsData {
 		return false;
 	}
 
+	public List<String> getGroup(String groupName) {
+		return groups.get(groupName);
+	}
+
 	public boolean isValidGroup(String groupName) {
 		return groups.get(groupName) != null ? true : false;
 	}
@@ -102,7 +117,8 @@ public class ChestGroupsData {
 	 * 
 	 * @param groupName
 	 * @param item
-	 * @return 0 if successful, -2 if the items already in a group, -1 if the group doesn't exist
+	 * @return 0 if successful, -2 if the items already in a group, -1 if the group
+	 *         doesn't exist
 	 */
 	public int addItemToGroup(String groupName, Material item) {
 		if (itemIsInAGroup(item)) {
@@ -123,7 +139,27 @@ public class ChestGroupsData {
 			return false;
 		}
 
-		return false;
+		List<String> newList = Arrays.asList();
+		groups.put(groupName, newList);
+		saveGroup(groupName);
+
+		return true;
+	}
+
+	/**
+	 * 
+	 * @param groupName
+	 * @return false if the group doesn't exist already
+	 */
+	public boolean removeGroup(String groupName) {
+		if (!isValidGroup(groupName)) {
+			return false;
+		}
+
+		groups.remove(groupName);
+		saveGroup(groupName);
+
+		return true;
 	}
 
 	public FileConfiguration getGroups() {
@@ -152,22 +188,6 @@ public class ChestGroupsData {
 		return null;
 	}
 
-	public void addToGroup(String groupName, String material) {
-		if (groups.get(groupName) == null) {
-			ArrayList<String> newList = new ArrayList<String>();
-			newList.add(material);
-			groups.put(groupName, newList);
-		} else {
-			if (!groups.get(groupName).contains(material)) {
-				groups.get(groupName).add(material);
-			}
-		}
-	}
-
-	public void addToGroup(String groupName, Material material) {
-		addToGroup(groupName, material.toString());
-	}
-
 	public void removeFromGroup(Material material) {
 		removeFromGroup(material.toString());
 	}
@@ -176,6 +196,7 @@ public class ChestGroupsData {
 		for (String group : groups.keySet()) {
 			if (groups.get(group).contains(material)) {
 				groups.get(group).remove(material);
+				saveGroup(group);
 			}
 		}
 	}
