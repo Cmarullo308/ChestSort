@@ -97,7 +97,6 @@ public class ChestGroupsData {
 				groups.put(group, newMaterialList);
 			} else {
 				groupsFileConfig.set("Groups." + group, null);
-				plugin.getLogger().info("--Groups cannot be names \"Misc\", removing--");
 			}
 		}
 
