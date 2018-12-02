@@ -18,6 +18,7 @@ public class CommandHandler {
 	ChestSort plugin;
 	NetworkData networkData;
 	ChestGroupsData groupData;
+	
 
 	public CommandHandler(ChestSort plugin, NetworkData networkData, ChestGroupsData groupData) {
 		this.plugin = plugin;

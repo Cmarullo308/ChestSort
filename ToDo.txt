@@ -1,14 +1,11 @@
-check for items in multiple groups
-can't make misc group in file or command
-if not chests or members, delete network?
-can't break other peoples signs/chests
+if no chests or members, delete network?
 Check that chests and signs are still there every day
-prevent infinite loop when sort. timer?
-make doublchest fix bs check if sign starts with star
-putting just "*" on a sign doesnt make a network
 cant put another network sign on the other side of a doublechest already in a newtwork?
 console can add network
 remove owner ids from config file if they have 0 networks
+sort when hoppe puts items into chest
+fix when sign is destroyed by moving the block behind it
+fill-emptier-first?
 
 
 comparators

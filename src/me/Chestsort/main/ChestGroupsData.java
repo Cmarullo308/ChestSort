@@ -88,12 +88,13 @@ public class ChestGroupsData {
 					}
 					// checks if items in a group already
 					if (itemsInGroups.contains(newMaterialList.get(i))) {
+						plugin.getLogger()
+								.info("--" + newMaterialList.get(i) + " alread belongs to a group. Removing--");
 						newMaterialList.remove(newMaterialList.get(i));
 					} else {
 						itemsInGroups.add(newMaterialList.get(i));
 					}
 				}
-				plugin.debugMessage(newMaterialList.toString());
 				groups.put(group, newMaterialList);
 			} else {
 				groupsFileConfig.set("Groups." + group, null);

@@ -2,11 +2,13 @@ package me.Chestsort.main;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.Listener;
 
@@ -19,10 +21,13 @@ public class ChestSortListener implements Listener {
 	NetworkData networkData;
 	ChestGroupsData groupsData;
 
+	long timeOfLastInventoryMoveEvent;
+
 	public ChestSortListener(ChestSort plugin, NetworkData networkData, ChestGroupsData groupsData) {
 		this.plugin = plugin;
 		this.networkData = networkData;
 		this.groupsData = groupsData;
+		timeOfLastInventoryMoveEvent = System.currentTimeMillis();
 	}
 
 	@EventHandler
@@ -138,13 +143,32 @@ public class ChestSortListener implements Listener {
 	}
 
 	@EventHandler
+	public void onInventoryMoveItemEvent(InventoryMoveItemEvent event) {
+		Block blockMovedTo = event.getDestination().getLocation().getBlock();
+		if (blockMovedTo.getType() != Material.CHEST) {
+			return;
+		}
+
+		Chest chest = (Chest) blockMovedTo.getState();
+
+		Thread autoSortThread = new Thread() {
+			@Override
+			public void run() {
+				Sorter.AutoSort(blockMovedTo, chest.getInventory(), null, plugin, networkData, groupsData);
+			}
+		};
+
+		autoSortThread.start();
+	}
+
+	@EventHandler
 	public void blockBreak(BlockBreakEvent event) {
 		Block brokenBlock = event.getBlock();
 
 		switch (brokenBlock.getType()) {
 		case CHEST:
 		case WALL_SIGN:
-			if(!networkData.checkAndRemoveChest(brokenBlock, event.getPlayer())) {
+			if (!networkData.checkAndRemoveChest(brokenBlock, event.getPlayer())) {
 				event.setCancelled(true);
 			}
 			break;

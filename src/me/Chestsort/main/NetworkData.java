@@ -354,12 +354,16 @@ public class NetworkData {
 					}
 					network.sortChests.remove(chestNum);
 					if (blockIsChest) {
-						Sign sign = (Sign) chestBlock.getLocation().add(0, 1, 0).getBlock().getState();
-						sign.setLine(0, "");
-						sign.setLine(1, "");
-						sign.setLine(2, "");
-						sign.setLine(3, "");
-						sign.update();
+						try {
+							Sign sign = (Sign) chestBlock.getLocation().add(0, 1, 0).getBlock().getState();
+							sign.setLine(0, "");
+							sign.setLine(1, "");
+							sign.setLine(2, "");
+							sign.setLine(3, "");
+							sign.update();
+						} catch (ClassCastException e) {
+							plugin.debugMessage("Sign missing when block removed");
+						}
 					}
 					removeSortChestFromNetwork(network, chestBlock);
 					return true;
@@ -374,12 +378,16 @@ public class NetworkData {
 				}
 				network.depositChests.remove(chestBlock);
 				if (blockIsChest) {
-					Sign sign = (Sign) chestBlock.getLocation().add(0, 1, 0).getBlock().getState();
-					sign.setLine(0, "");
-					sign.setLine(1, "");
-					sign.setLine(2, "");
-					sign.setLine(3, "");
-					sign.update();
+					try {
+						Sign sign = (Sign) chestBlock.getLocation().add(0, 1, 0).getBlock().getState();
+						sign.setLine(0, "");
+						sign.setLine(1, "");
+						sign.setLine(2, "");
+						sign.setLine(3, "");
+						sign.update();
+					} catch (ClassCastException e) {
+						plugin.debugMessage("Sign missing when block removed");
+					}
 				}
 				removeDepositChestFromNetwork(network, chestBlock);
 				return true;
