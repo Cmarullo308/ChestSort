@@ -2,6 +2,7 @@ package me.Chestsort.main;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ public class ChestGroupsData {
 	ChestSort plugin;
 
 	HashMap<String, List<String>> groups = new HashMap<String, List<String>>();
+	ArrayList<String> itemsInGroups = new ArrayList<String>();
 
 	// Files and FileConfigs
 	public FileConfiguration groupsFileConfig;
@@ -73,18 +75,25 @@ public class ChestGroupsData {
 			return;
 		}
 
-		// For each group
-		for (String group : groupNames) {
+		for (String group : groupNames) { // For each group
 			if (!group.equalsIgnoreCase("Misc")) {
 				List<String> newMaterialList = groupsFileConfig.getStringList("Groups." + group);
-				for (int i = 0; i < newMaterialList.size(); i++) {
+				for (int i = 0; i < newMaterialList.size(); i++) { // for each item in group
+					// Test if valid item
 					try {
 						Material.valueOf(newMaterialList.get(i));
 					} catch (IllegalArgumentException e) {
 						plugin.getLogger().info("Invalid material: \"" + newMaterialList.get(i) + "\", Ignoring");
 						newMaterialList.remove(i);
 					}
+					// checks if items in a group already
+					if (itemsInGroups.contains(newMaterialList.get(i))) {
+						newMaterialList.remove(newMaterialList.get(i));
+					} else {
+						itemsInGroups.add(newMaterialList.get(i));
+					}
 				}
+				plugin.debugMessage(newMaterialList.toString());
 				groups.put(group, newMaterialList);
 			} else {
 				groupsFileConfig.set("Groups." + group, null);
