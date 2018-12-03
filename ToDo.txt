@@ -1,3 +1,6 @@
+PERMISSIONS
+when group is removed, set all chests of that group to deactivated
+error when trying to add item to group right after creating the group
 if no chests or members, delete network?
 Check that chests and signs are still there every day
 cant put another network sign on the other side of a doublechest already in a newtwork?

@@ -132,7 +132,7 @@ public class CommandHandler {
 	private void removeFromGroup(CommandSender sender, String[] args) {
 		Material material;
 		String groupName = args[1];
-		String itemName = args[3];
+		String itemName = args[3].toUpperCase();
 
 		try {
 			material = Material.valueOf(itemName);

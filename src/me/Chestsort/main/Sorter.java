@@ -42,7 +42,26 @@ public class Sorter {
 
 		depositChest.inUse = true;
 
-		ItemStack[] contents = inventory.getContents();
+		ItemStack[] contents = new ItemStack[inventory.getContents().length];
+		for (int i = 0; i < inventory.getContents().length; i++) {
+			if (inventory.getContents()[i] != null) {
+				contents[i] = inventory.getContents()[i].clone();
+			}
+		}
+
+		ItemStack[] originalContents = new ItemStack[contents.length];
+		for (int i = 0; i < contents.length; i++) {
+			if (contents[i] != null) {
+				originalContents[i] = new ItemStack(contents[i]);
+			}
+		}
+
+		int[] contentAmounts = new int[contents.length];
+		for (int i = 0; i < contentAmounts.length; i++) {
+			if (contents[i] != null) {
+				contentAmounts[i] = contents[i].getAmount();
+			}
+		}
 
 		// Moves all the items in the chest to the sortchests
 		for (int slotNum = 0; slotNum < contents.length; slotNum++) { // For each item in chest
@@ -70,7 +89,19 @@ public class Sorter {
 			}
 		}
 
-		inventory.setContents(contents);
+		for (int i = 0; i < contents.length; i++) {
+			if (contents[i] != null) {
+				int amount = (contentAmounts[i] - contents[i].getAmount());
+				contents[i].setAmount(amount);
+				inventory.removeItem(contents[i]);
+			} else {
+				if (originalContents[i] != null) {
+					inventory.removeItem(originalContents[i]);
+				}
+			}
+		}
+
+//		inventory.setContents(contents);
 
 		// Checks if there wasn't enough space to move all the chest items
 		boolean notEnoughSpace = false;
