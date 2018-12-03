@@ -1,6 +1,10 @@
 package me.Chestsort.main;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
+import java.util.Scanner;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -18,7 +22,6 @@ public class CommandHandler {
 	ChestSort plugin;
 	NetworkData networkData;
 	ChestGroupsData groupData;
-	
 
 	public CommandHandler(ChestSort plugin, NetworkData networkData, ChestGroupsData groupData) {
 		this.plugin = plugin;
@@ -336,9 +339,21 @@ public class CommandHandler {
 
 	private void membersCommands(CommandSender sender, String[] args) {
 		if (args[3].equalsIgnoreCase("add")) {
-			addMember(sender, args);
+			Thread thread = new Thread() {
+				@Override
+				public void run() {
+					addMember(sender, args);
+				}
+			};
+			thread.start();
 		} else if (args[3].equalsIgnoreCase("remove")) {
-			removeMember(sender, args);
+			Thread thread = new Thread() {
+				@Override
+				public void run() {
+					removeMember(sender, args);
+				}
+			};
+			thread.start();
 		}
 	}
 
@@ -359,10 +374,18 @@ public class CommandHandler {
 			return;
 		}
 
-		Player member = Bukkit.getPlayer(memberName);
+		UUID member;
+		try {
+			member = Bukkit.getPlayer(memberName).getUniqueId();
+		} catch (NullPointerException e) {
+			member = null;
+		}
 		if (member == null) {
-			sender.sendMessage(ChatColor.RED + "No player named " + ChatColor.YELLOW + memberName);
-			return;
+			member = getOfflinePlayer(sender, memberName);
+			if (member == null) {
+				sender.sendMessage(ChatColor.RED + "No player named " + ChatColor.YELLOW + memberName);
+				return;
+			}
 		}
 
 		if (network.isMember(member)) {
@@ -392,11 +415,18 @@ public class CommandHandler {
 					+ network.networkName + ChatColor.RED + " to modify its members");
 			return;
 		}
-
-		Player newMember = Bukkit.getPlayer(newMemberName);
+		UUID newMember;
+		try {
+			newMember = Bukkit.getPlayer(newMemberName).getUniqueId();
+		} catch (NullPointerException e) {
+			newMember = null;
+		}
 		if (newMember == null) {
-			sender.sendMessage(ChatColor.RED + "No player named " + ChatColor.YELLOW + newMemberName);
-			return;
+			newMember = getOfflinePlayer(sender, newMemberName);
+			if (newMember == null) {
+				sender.sendMessage(ChatColor.RED + "No player named " + ChatColor.YELLOW + newMemberName);
+				return;
+			}
 		}
 
 		if (!network.isMember(newMember)) {
@@ -409,6 +439,43 @@ public class CommandHandler {
 					+ ChatColor.YELLOW + networkName);
 		}
 
+	}
+
+	private UUID getOfflinePlayer(CommandSender sender, String newMemberName) {
+		URL api;
+		try {
+			api = new URL("https://api.mojang.com/users/profiles/minecraft/" + newMemberName);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			sender.sendMessage(ChatColor.RED + "Could not get user from mojang api");
+			return null;
+		}
+		Scanner scanner = null;
+		try {
+			scanner = new Scanner(api.openStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+			sender.sendMessage(ChatColor.RED + "Error getting user");
+			return null;
+		}
+
+		String idString = scanner.nextLine();
+
+		UUID id = null;
+		try {
+			id = UUID.fromString(idString.substring(7, 15) + "-" + idString.substring(15, 19) + "-"
+					+ idString.substring(19, 23) + "-" + idString.substring(23, 27) + "-" + idString.substring(27, 39));
+		} catch (IllegalArgumentException e) {
+			sender.sendMessage(ChatColor.RED + "Invalid username");
+			scanner.close();
+			return null;
+		} catch (Exception e) {
+			scanner.close();
+			e.printStackTrace();
+		}
+
+		scanner.close();
+		return id;
 	}
 
 	private void priorityCommands(CommandSender sender, String[] args) {
