@@ -71,7 +71,7 @@ public class NetworkData {
 		return null;
 	}
 
-	public void saveNetwork(Network network) {
+	public void saveNetwork(Network network, boolean saveToFile) {
 		UUID uuid = network.owner;
 
 		String path = "Owners." + uuid + ".NetworkNames." + network.networkName;
@@ -135,7 +135,9 @@ public class NetworkData {
 		}
 
 		// remove later maybe?
-		saveNetworkData();
+		if (saveToFile) {
+			saveNetworkData();
+		}
 	}
 
 	public SortChest getSortChestBySign(Block signBlock, String networkName) {
@@ -346,7 +348,7 @@ public class NetworkData {
 
 		getNetworks().set("Owners." + network.owner + ".NetworkNames." + network.networkName + ".Chests." + chestName,
 				null);
-		saveNetwork(network);
+		saveNetwork(network, true);
 	}
 
 	public void removeDepositChestFromNetwork(Network network, Block chestBlock) {
@@ -358,7 +360,28 @@ public class NetworkData {
 		getNetworks().set(
 				"Owners." + network.owner + ".NetworkNames." + network.networkName + ".DepositChests." + chestName,
 				null);
-		saveNetwork(network);
+		saveNetwork(network, true);
+	}
+
+	public void disableAllChestsWithGroup(String groupName) {
+
+		for (Network network : networks.values()) {
+			ArrayList<SortChest> chestsToDelete = new ArrayList<SortChest>();
+			for (SortChest chest : network.sortChests) {
+				if (chest.group.equals(groupName)) {
+					Sign sign = (Sign) chest.sign.getState();
+					sign.setLine(3, ChatColor.RED + "(DISABLED)");
+					sign.update();
+					chestsToDelete.add(chest);
+				}
+			}
+			for (SortChest chest : chestsToDelete) {
+				network.sortChests.remove(chest);
+			}
+			saveNetwork(network, false);
+		}
+		
+		saveNetworkData();
 	}
 
 	public boolean checkAndRemoveChest(Block brokenBlock, Player player) {

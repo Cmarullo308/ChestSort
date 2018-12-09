@@ -166,6 +166,7 @@ public class ChestGroupsData {
 		}
 
 		groups.remove(groupName);
+		plugin.networkData.disableAllChestsWithGroup(groupName);
 		saveGroup(groupName);
 
 		return true;

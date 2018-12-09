@@ -72,7 +72,7 @@ public class ChestSortListener implements Listener {
 			e.setLine(1, ChatColor.GRAY + "Open Chest");
 			e.setLine(2, ChatColor.GRAY + "To Deposit");
 			network.addDepositChest(network, e.getBlock().getLocation().add(0, -1, 0).getBlock(), e.getBlock());
-			plugin.networkData.saveNetwork(network);
+			plugin.networkData.saveNetwork(network, true);
 
 			player.sendMessage("Deposit chest created for network " + ChatColor.YELLOW + tempNetworkName);
 		}
@@ -122,7 +122,7 @@ public class ChestSortListener implements Listener {
 			Block sign = e.getBlock();
 
 			network.addSortChest(chest, sign, groupName, newChestPriority);
-			networkData.saveNetwork(network);
+			networkData.saveNetwork(network, true);
 
 			player.sendMessage("Chest created for group " + ChatColor.YELLOW + groupName + ChatColor.WHITE
 					+ " in network " + ChatColor.YELLOW + tempNetworkName);

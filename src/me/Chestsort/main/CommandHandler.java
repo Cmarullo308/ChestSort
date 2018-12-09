@@ -390,7 +390,7 @@ public class CommandHandler {
 
 		if (network.isMember(member)) {
 			network.removeMember(member);
-			networkData.saveNetwork(network);
+			networkData.saveNetwork(network, true);
 			sender.sendMessage(ChatColor.GREEN + "You removed " + ChatColor.YELLOW + memberName + ChatColor.GREEN
 					+ " as a member from the network " + ChatColor.YELLOW + networkName);
 		} else {
@@ -431,7 +431,7 @@ public class CommandHandler {
 
 		if (!network.isMember(newMember)) {
 			network.addMember(newMember);
-			networkData.saveNetwork(network);
+			networkData.saveNetwork(network, true);
 			sender.sendMessage(ChatColor.GREEN + "You added " + ChatColor.YELLOW + newMemberName + ChatColor.GREEN
 					+ " as a member to the network " + ChatColor.YELLOW + networkName);
 		} else {
@@ -555,7 +555,7 @@ public class CommandHandler {
 
 		sortChest.updateSign();
 
-		networkData.saveNetwork(network);
+		networkData.saveNetwork(network, true);
 
 		player.sendMessage(ChatColor.GREEN + "Chest priority set to " + ChatColor.YELLOW + sortChest.priority);
 	}
@@ -619,7 +619,7 @@ public class CommandHandler {
 
 		Network newNetwork = new Network(player.getUniqueId(), newNetworkName, plugin);
 		networkData.addNetwork(newNetworkName, newNetwork);
-		networkData.saveNetwork(newNetwork);
+		networkData.saveNetwork(newNetwork, true);
 
 		sender.sendMessage("Network " + ChatColor.YELLOW + newNetworkName + ChatColor.WHITE + " created");
 	}
