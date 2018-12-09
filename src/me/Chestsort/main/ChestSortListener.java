@@ -2,7 +2,10 @@ package me.Chestsort.main;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
+import org.bukkit.block.Sign;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -41,8 +44,12 @@ public class ChestSortListener implements Listener {
 		}
 
 		Player player = e.getPlayer();
-
 		String tempNetworkName = e.getLine(0).substring(1);
+
+		if (activeChestNextToChest(e.getBlock())) {
+			player.sendMessage(ChatColor.RED + "This chest is already part of a network");
+			return;
+		}
 
 		// If deposit chest
 		if (e.getLine(1).equals("") && e.getLine(0).startsWith("*") && e.getLine(0).length() > 1) {
@@ -110,7 +117,6 @@ public class ChestSortListener implements Listener {
 
 			e.setLine(0, ChatColor.DARK_BLUE + e.getLine(0));
 			e.setLine(2, ChatColor.GRAY + "Priority: " + newChestPriority);
-			plugin.debugMessage(plugin.defaultChestPriority + "");
 
 			Block chest = e.getBlock().getLocation().add(0, -1, 0).getBlock();
 			Block sign = e.getBlock();
@@ -123,6 +129,62 @@ public class ChestSortListener implements Listener {
 		}
 
 		plugin.saveNetworksToFile();
+	}
+
+	private boolean activeChestNextToChest(Block block) {
+		Block chestBlock = block.getLocation().clone().add(0, -1, 0).getBlock();
+		Directional dir = (Directional) chestBlock.getBlockData();
+
+		Sign sign = null;
+
+		if (dir.getFacing() == BlockFace.EAST || dir.getFacing() == BlockFace.WEST) {
+			if (block.getLocation().clone().add(0, 0, 1).getBlock().getType() == Material.WALL_SIGN) {
+				sign = (Sign) block.getLocation().clone().add(0, 0, 1).getBlock().getState();
+			} else if (block.getLocation().clone().add(0, 0, -1).getBlock().getType() == Material.WALL_SIGN) {
+				sign = (Sign) block.getLocation().clone().add(0, 0, -1).getBlock().getState();
+			}
+		} else {
+			if (block.getLocation().clone().add(1, 0, 0).getBlock().getType() == Material.WALL_SIGN) {
+				sign = (Sign) block.getLocation().clone().add(1, 0, 0).getBlock().getState();
+			} else if (block.getLocation().clone().add(-1, 0, 0).getBlock().getType() == Material.WALL_SIGN) {
+				sign = (Sign) block.getLocation().clone().add(-1, 0, 0).getBlock().getState();
+			}
+		}
+
+		if (sign == null) {
+			return false;
+		}
+
+		String networkName = sign.getLine(0).substring(3);
+
+		if (networkData.networkExists(networkName)) {
+			SortChest otherSortChest = networkData.getSortChestBySign(sign.getBlock(), networkName);
+			if (otherSortChest == null) { // No sort chest
+				NetworkItem otherDepositChest = networkData.getDepositChestBySign(sign.getBlock(), networkName);
+
+				if (otherDepositChest == null) { // No deposit chest
+					return false;
+				} else { // Is deposit chest
+					Chest c1 = (Chest) otherDepositChest.chest.getState();
+					Chest c2 = (Chest) chestBlock.getState();
+					if (c1.getInventory().getLocation().equals(c2.getInventory().getLocation())) {
+						return true;
+					} else {
+						return false;
+					}
+				}
+			} else { // Is sort chest
+				Chest c1 = (Chest) otherSortChest.block.getState();
+				Chest c2 = (Chest) chestBlock.getState();
+				if (c1.getInventory().getLocation().equals(c2.getInventory().getLocation())) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	@EventHandler

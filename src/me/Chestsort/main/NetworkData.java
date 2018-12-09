@@ -138,6 +138,66 @@ public class NetworkData {
 		saveNetworkData();
 	}
 
+	public SortChest getSortChestBySign(Block signBlock, String networkName) {
+		Network network = networks.get(networkName);
+
+		if (network == null) {
+			return null;
+		}
+
+		for (SortChest chest : network.sortChests) { // For each SortChest
+			if (chest.sign.getLocation().equals(signBlock.getLocation())) {
+				return chest;
+			}
+		}
+
+		return null;
+	}
+
+	public NetworkItem getDepositChestBySign(Block signBlock, String networkName) {
+		Network network = networks.get(networkName);
+
+		if (network == null) {
+			return null;
+		}
+
+		for (NetworkItem chest : network.depositChests.values()) { // For each SortChest
+			if (chest.sign.getLocation().equals(signBlock.getLocation())) {
+				return chest;
+			}
+		}
+
+		return null;
+	}
+
+	public SortChest getSortChestBySign(Sign sign) {
+		if (!sign.getLine(0).contains("*")) {
+			return null;
+		}
+
+		int lastStarIndex = sign.getLine(0).lastIndexOf("*");
+		if (sign.getLine(0).length() - 1 == lastStarIndex) {
+			return null;
+		}
+		String networkName = sign.getLine(0).substring(lastStarIndex + 1);
+
+		if (!networkExists(networkName)) {
+			return null;
+		}
+
+		Network network = getNetwork(networkName);
+
+		Block chestBlock = sign.getLocation().clone().add(0, -1, 0).getBlock();
+
+		for (SortChest chest : network.sortChests) {
+			if (chest.block.equals(chestBlock)) {
+				return chest;
+			}
+		}
+
+		return null;
+	}
+
 	public void createNewNetwork(Player player, String newNetworkName) {
 		Network newNetwork = new Network(player.getUniqueId(), newNetworkName, plugin);
 
@@ -268,34 +328,6 @@ public class NetworkData {
 		if (chestBlock.getLocation().getBlock().getType() == Material.WALL_SIGN) {
 			Sign sign = (Sign) chestBlock.getLocation().getBlock().getState();
 			return getSortChestBySign(sign);
-		}
-
-		return null;
-	}
-
-	public SortChest getSortChestBySign(Sign sign) {
-		if (!sign.getLine(0).contains("*")) {
-			return null;
-		}
-
-		int lastStarIndex = sign.getLine(0).lastIndexOf("*");
-		if (sign.getLine(0).length() - 1 == lastStarIndex) {
-			return null;
-		}
-		String networkName = sign.getLine(0).substring(lastStarIndex + 1);
-
-		if (!networkExists(networkName)) {
-			return null;
-		}
-
-		Network network = getNetwork(networkName);
-
-		Block chestBlock = sign.getLocation().clone().add(0, -1, 0).getBlock();
-
-		for (SortChest chest : network.sortChests) {
-			if (chest.block.equals(chestBlock)) {
-				return chest;
-			}
 		}
 
 		return null;
