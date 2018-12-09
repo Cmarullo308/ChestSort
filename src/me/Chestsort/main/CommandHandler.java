@@ -604,6 +604,8 @@ public class CommandHandler {
 		network.disableAllDepositChests();
 		network.disableAllSortChests();
 		networkData.removeNetwork(network);
+		sender.sendMessage(
+				ChatColor.GREEN + "Network " + ChatColor.YELLOW + networkName + ChatColor.GREEN + " removed");
 	}
 
 	private void createNewNetwork(CommandSender sender, String newNetworkName) {

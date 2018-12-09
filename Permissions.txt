@@ -1,0 +1,7 @@
+chestsort.network.create
+chestsort.network.remove
+chestsort.network.info
+chestsort.network.list
+
+chestsort.priority.set
+chestsort.priority.get
