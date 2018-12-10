@@ -23,6 +23,8 @@ public class ChestSort extends JavaPlugin {
 	boolean notEnoughSpaceSoundEnabled;
 	// ------
 
+	String helpMenuMessage;
+
 	int defaultChestPriority;
 
 	final ChatColor signNetworkColor = ChatColor.DARK_BLUE;
@@ -39,10 +41,28 @@ public class ChestSort extends JavaPlugin {
 		networkData.loadNetworkData();
 		groupData.setup();
 
+		createHelpMenuMessage();
+
 		this.getServer().getPluginManager().registerEvents(new ChestSortListener(this, networkData, groupData), this);
 		getLogger().info("ChestSort Loaded");
 		super.onEnable();
 		tempStuff();
+	}
+
+	private void createHelpMenuMessage() {
+		helpMenuMessage = ChatColor.BOLD + "Commands\n";
+
+		helpMenuMessage += ChatColor.GRAY + "  /sortchest network <networkName> <remove | create | info>\n";
+		helpMenuMessage += ChatColor.WHITE + "  /sortchest priority set <number>\n";
+		helpMenuMessage += ChatColor.GRAY + "  /sortchest priority get\n";
+		helpMenuMessage += ChatColor.WHITE
+				+ "  /sortchest network <networkName> <members> <add | remove> <playerName>\n";
+		helpMenuMessage += ChatColor.GRAY + "  /sortchest network list\n";
+		helpMenuMessage += ChatColor.WHITE + "  /sortchest sound <whichSound> <set | get | enable | disable> [sound]\n";
+		helpMenuMessage += ChatColor.GRAY + "  /sortchest sound list\n";
+		helpMenuMessage += ChatColor.WHITE
+				+ "  /sortchest group <groupname> <additem | removeitem | create | remove | list> <item>\n";
+		helpMenuMessage += ChatColor.GRAY + "  /sc groupof <itemName>\n";
 	}
 
 	private void loadAndCheckConfigData() {
@@ -86,7 +106,7 @@ public class ChestSort extends JavaPlugin {
 			saveConfig();
 			return true;
 		}
-		
+
 		return worked;
 	}
 

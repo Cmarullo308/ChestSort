@@ -1,5 +1,6 @@
 PERMISSIONS
 Can't edit sign?
+help / command list
 when group is removed, set all chests of that group to deactivated
 when break sort chest sign, send message saying disabled
 if no chests or members, delete network?

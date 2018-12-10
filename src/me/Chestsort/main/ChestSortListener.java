@@ -53,6 +53,11 @@ public class ChestSortListener implements Listener {
 
 		// If deposit chest
 		if (e.getLine(1).equals("") && e.getLine(0).startsWith("*") && e.getLine(0).length() > 1) {
+			if (!player.hasPermission("chestsort.network.create")) {
+				player.sendMessage(ChatColor.RED + "You do not have permission to create networks");
+				return;
+			}
+
 			Network network;
 
 			// If network doesn't exist

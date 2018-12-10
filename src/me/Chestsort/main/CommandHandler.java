@@ -41,8 +41,14 @@ public class CommandHandler {
 		case "group":
 			groupCommands(sender, args);
 			break;
+		case "groupof":
+			groupOfCommand(sender, args);
+			break;
 		case "sound":
 			soundCommands(sender, args);
+			break;
+		case "help":
+			helpMenu(sender, args);
 			break;
 		case "test":
 			testCommand(sender, args);
@@ -53,6 +59,44 @@ public class CommandHandler {
 		}
 
 		return true;
+	}
+
+	private void helpMenu(CommandSender sender, String[] args) {
+		sender.sendMessage(plugin.helpMenuMessage);
+	}
+
+	private void groupOfCommand(CommandSender sender, String[] args) {
+		if (args.length != 2) {
+			sender.sendMessage(ChatColor.RED + "Invalid number of arguements");
+			return;
+		}
+
+		if (!sender.hasPermission("chestsort.groupof")) {
+			noPermission(sender);
+			return;
+		}
+
+		Material material;
+		try {
+			material = Material.valueOf(args[1].toUpperCase());
+		} catch (IllegalArgumentException e) {
+			sender.sendMessage(ChatColor.RED + "Invalid item name");
+			return;
+		}
+
+		String groupName = groupData.getGroupName(material);
+		if (groupName == null) {
+			sender.sendMessage(ChatColor.YELLOW + material.toString() + ChatColor.GREEN + " is not in a group");
+			return;
+		} else {
+			sender.sendMessage(ChatColor.YELLOW + material.toString() + ChatColor.GREEN + " is in the group "
+					+ ChatColor.YELLOW + groupName);
+			return;
+		}
+	}
+
+	private void noPermission(CommandSender sender) {
+		sender.sendMessage(ChatColor.RED + "You do not have permission to run this command");
 	}
 
 	private void groupCommands(CommandSender sender, String[] args) {
@@ -109,6 +153,11 @@ public class CommandHandler {
 	}
 
 	private void removeGroup(CommandSender sender, String groupName) {
+		if (!sender.hasPermission("chestsort.group.modifygroups")) {
+			noPermission(sender);
+			return;
+		}
+
 		if (!groupData.removeGroup(groupName)) {
 			sender.sendMessage(ChatColor.RED + "No group named " + ChatColor.YELLOW + groupName);
 			return;
@@ -118,6 +167,11 @@ public class CommandHandler {
 	}
 
 	private void createGroup(CommandSender sender, String groupName) {
+		if (!sender.hasPermission("chestsort.group.modifygroups")) {
+			noPermission(sender);
+			return;
+		}
+
 		if (groupName.equalsIgnoreCase("misc")) {
 			sender.sendMessage(ChatColor.RED + "The group cannot be named " + ChatColor.YELLOW + "Misc");
 			return;
@@ -133,6 +187,11 @@ public class CommandHandler {
 	}
 
 	private void removeFromGroup(CommandSender sender, String[] args) {
+		if (!sender.hasPermission("chestsort.group.modifygroupitems")) {
+			noPermission(sender);
+			return;
+		}
+
 		Material material;
 		String groupName = args[1];
 		String itemName = args[3].toUpperCase();
@@ -156,6 +215,11 @@ public class CommandHandler {
 	}
 
 	private void addToGroup(CommandSender sender, String[] args) {
+		if (!sender.hasPermission("chestsort.group.modifygroupitems")) {
+			noPermission(sender);
+			return;
+		}
+
 		Material material;
 		String groupName = args[1];
 		String itemName = args[3].toUpperCase();
@@ -216,6 +280,11 @@ public class CommandHandler {
 	}
 
 	private void enableDisableSound(CommandSender sender, String[] args) {
+		if (!sender.hasPermission("chestsort.sound.toggle")) {
+			noPermission(sender);
+			return;
+		}
+
 		String soundName = args[1];
 		boolean enabled;
 		if (args[2].equalsIgnoreCase("enable")) {
@@ -240,6 +309,11 @@ public class CommandHandler {
 	}
 
 	private void listSounds(CommandSender sender, String[] args) {
+		if (!sender.hasPermission("chestsort.sound.set")) {
+			noPermission(sender);
+			return;
+		}
+
 		String message = ChatColor.DARK_BLUE + "---------------------------\n";
 
 		message += ChatColor.GREEN + "Sort_sound: " + ChatColor.YELLOW + plugin.sortSound.toString() + "\n";
@@ -251,6 +325,11 @@ public class CommandHandler {
 	}
 
 	private void getSound(CommandSender sender, String[] args) {
+		if (!sender.hasPermission("chestsort.sound.get")) {
+			noPermission(sender);
+			return;
+		}
+
 		String soundName = args[1];
 		if (soundName.equalsIgnoreCase("sort_sound")) {
 			sender.sendMessage(ChatColor.GREEN + "Sort_sound: " + ChatColor.YELLOW + plugin.sortSound.toString());
@@ -266,6 +345,11 @@ public class CommandHandler {
 	}
 
 	private void setSound(CommandSender sender, String[] args) {
+		if (!sender.hasPermission("chestsort.sound.set")) {
+			noPermission(sender);
+			return;
+		}
+
 		String soundName = args[1];
 		String sound = args[3];
 
@@ -323,6 +407,11 @@ public class CommandHandler {
 	}
 
 	private void listNetworks(CommandSender sender, String[] args) {
+		if (!sender.hasPermission("chestsort.network.list")) {
+			noPermission(sender);
+			return;
+		}
+
 		String message = ChatColor.GREEN + "Networks: [";
 		for (Network network : networkData.networks.values()) {
 			message += ChatColor.WHITE + network.networkName + ChatColor.GREEN + ", ";
@@ -495,15 +584,34 @@ public class CommandHandler {
 	}
 
 	private void getPriority(CommandSender sender, String[] args) {
+		if (!sender.hasPermission("chestsort.priority.get")) {
+			noPermission(sender);
+			return;
+		}
+
 		Player player = (Player) sender;
 		Block lookingAt = player.getTargetBlockExact(20);
-		SortChest sortChest;
+		SortChest sortChest = null;
 
 		if (lookingAt.getType() == Material.CHEST) {
-			sortChest = networkData
-					.getSortChestBySign((Sign) lookingAt.getLocation().clone().add(0, 1, 0).getBlock().getState());
+			Block signBlock = lookingAt.getLocation().clone().add(0, 1, 0).getBlock();
+			if (signBlock.getType() == Material.WALL_SIGN) {
+				Sign sign = (Sign) signBlock.getState();
+				try {
+					sortChest = networkData.getSortChestBySign(signBlock, sign.getLine(0).substring(3));
+				} catch (StringIndexOutOfBoundsException e) {
+					sortChest = null;
+				}
+			}
 		} else if (lookingAt.getType() == Material.WALL_SIGN) {
-			sortChest = networkData.getSortChestByChestBlock(lookingAt);
+			if (lookingAt.getType() == Material.WALL_SIGN) {
+				Sign sign = (Sign) lookingAt.getState();
+				try {
+					sortChest = networkData.getSortChestBySign(lookingAt, sign.getLine(0).substring(3));
+				} catch (StringIndexOutOfBoundsException e) {
+					sortChest = null;
+				}
+			}
 		} else {
 			sender.sendMessage(ChatColor.RED + "Must be looking at a chest or sign");
 			return;
@@ -519,15 +627,34 @@ public class CommandHandler {
 	}
 
 	private void setPriority(CommandSender sender, String[] args) {
+		if (!sender.hasPermission("chestsort.priority.set")) {
+			noPermission(sender);
+			return;
+		}
+
 		Player player = (Player) sender;
 		Block lookingAt = player.getTargetBlockExact(20);
-		SortChest sortChest;
+		SortChest sortChest = null;
 
 		if (lookingAt.getType() == Material.CHEST) {
-			sortChest = networkData
-					.getSortChestBySign((Sign) lookingAt.getLocation().clone().add(0, 1, 0).getBlock().getState());
+			Block signBlock = lookingAt.getLocation().clone().add(0, 1, 0).getBlock();
+			if (signBlock.getType() == Material.WALL_SIGN) {
+				Sign sign = (Sign) signBlock.getState();
+				try {
+					sortChest = networkData.getSortChestBySign(signBlock, sign.getLine(0).substring(3));
+				} catch (StringIndexOutOfBoundsException e) {
+					sortChest = null;
+				}
+			}
 		} else if (lookingAt.getType() == Material.WALL_SIGN) {
-			sortChest = networkData.getSortChestByChestBlock(lookingAt);
+			if (lookingAt.getType() == Material.WALL_SIGN) {
+				Sign sign = (Sign) lookingAt.getState();
+				try {
+					sortChest = networkData.getSortChestBySign(lookingAt, sign.getLine(0).substring(3));
+				} catch (StringIndexOutOfBoundsException e) {
+					sortChest = null;
+				}
+			}
 		} else {
 			sender.sendMessage(ChatColor.RED + "Must be looking at a chest or sign");
 			return;
@@ -561,6 +688,11 @@ public class CommandHandler {
 	}
 
 	private void printNetworkInfo(CommandSender sender, String networkName) {
+		if (!sender.hasPermission("chestsort.network.info")) {
+			noPermission(sender);
+			return;
+		}
+
 		if (!networkData.networkExists(networkName)) {
 			sender.sendMessage(ChatColor.RED + "There's no network named " + ChatColor.YELLOW + networkName);
 			return;
@@ -588,6 +720,11 @@ public class CommandHandler {
 	}
 
 	private void removeNetwork(CommandSender sender, String networkName) {
+		if (!sender.hasPermission("chestsort.network.remove")) {
+			noPermission(sender);
+			return;
+		}
+
 		Network network;
 		if (!networkData.networkExists(networkName)) {
 			sender.sendMessage(ChatColor.RED + "There's no network named " + ChatColor.YELLOW + networkName);
@@ -609,6 +746,11 @@ public class CommandHandler {
 	}
 
 	private void createNewNetwork(CommandSender sender, String newNetworkName) {
+		if (!sender.hasPermission("chestsort.network.create")) {
+			noPermission(sender);
+			return;
+		}
+
 		if (!(sender instanceof Player)) {
 			mustBeAPlayerMessage(sender);
 			return;

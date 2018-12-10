@@ -326,10 +326,32 @@ public class NetworkData {
 		networks.put(networkName, network);
 	}
 
+//	public SortChest getSortChestByChestBlock(Block chestBlock) {
+//		if (chestBlock.getLocation().getBlock().getType() == Material.WALL_SIGN) {
+//			Sign sign = (Sign) chestBlock.getLocation().getBlock().getState();
+//			return getSortChestBySign(sign);
+//		}
+//
+//		return null;
+//	}
+
 	public SortChest getSortChestByChestBlock(Block chestBlock) {
-		if (chestBlock.getLocation().getBlock().getType() == Material.WALL_SIGN) {
-			Sign sign = (Sign) chestBlock.getLocation().getBlock().getState();
-			return getSortChestBySign(sign);
+		if (chestBlock.getLocation().clone().add(0, 1, 0).getBlock().getType() != Material.WALL_SIGN) {
+			return null;
+		}
+
+		Sign sign = (Sign) chestBlock.getLocation().clone().add(0, 1, 0).getBlock().getState();
+		String networkName = sign.getLine(0).substring(3);
+		Network network = getNetwork(networkName);
+
+		if (network == null) {
+			return null;
+		}
+
+		for (SortChest chest : network.sortChests) {
+			if (chest.block.equals(chestBlock)) {
+				return chest;
+			}
 		}
 
 		return null;
@@ -380,7 +402,7 @@ public class NetworkData {
 			}
 			saveNetwork(network, false);
 		}
-		
+
 		saveNetworkData();
 	}
 

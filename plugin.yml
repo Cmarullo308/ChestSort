@@ -9,3 +9,39 @@ commands:
       aliases: [cs]
       usage: /<SortChest> [command]
       description: Main command
+permissions:
+  chestsort.network:
+    parent node: chestsort
+    default: true
+  chestsort.network.create:
+    parent node: chestsort.network
+    default: true
+  chestsort.network.remove:
+    parent node: chestsort.network
+    default: true
+  chestsort.network.info:
+    parent node: chestsort.network
+    default: true
+  chestsort.network.list:
+    parent node: chestsort.network
+    default: true
+  chestsort.priority.set:
+    parent node: chestsort.priority
+    default: true
+  chestsort.priority.get:
+    parent node: chestsort.priority
+    default: true
+  chestsort.sound.set:
+    parent node: chestsort.sound
+  chestsort.sound.get:
+    parent node: chestsort.sound
+    default: true
+  chestsort.sound.toggle:
+    parent node: chestsort.sound
+  chestsort.group.modifygroupitems:
+    parent node: chestsort.group
+  chestsort.group.modifygroups:
+    parent node: chestsort.group
+  chestsort.groupof:
+    parent node: chestsort
+    default: true

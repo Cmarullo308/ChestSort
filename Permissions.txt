@@ -1,7 +1,16 @@
-chestsort.network.create
-chestsort.network.remove
-chestsort.network.info
-chestsort.network.list
+chestsort.network.create (Default)
+chestsort.network.remove (Default) //Only on own / member of
+chestsort.network.info (Default)
+chestsort.network.list (Default)
 
-chestsort.priority.set
-chestsort.priority.get
+chestsort.priority.set (Default) //Only on own / member of
+chestsort.priority.get (Default)
+
+chestsort.sound.set
+chestsort.sound.get (Default) 
+chestsort.sound.toggle
+
+chestsort.group.modifygroupitems
+chestsort.group.modifygroups
+chestsort.group.groupof (Default)
+
