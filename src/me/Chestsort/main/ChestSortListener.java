@@ -255,6 +255,8 @@ public class ChestSortListener implements Listener {
 		case WALL_SIGN:
 			if (!networkData.checkAndRemoveChest(brokenBlock, event.getPlayer())) {
 				event.setCancelled(true);
+			} else {
+				event.getPlayer().sendMessage(ChatColor.GREEN + "Network chest disabled");
 			}
 			break;
 		default:

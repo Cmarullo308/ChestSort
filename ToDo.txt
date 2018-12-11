@@ -1,15 +1,9 @@
-PERMISSIONS
 Can't edit sign?
-help / command list
-when group is removed, set all chests of that group to deactivated
-when break sort chest sign, send message saying disabled
-if no chests or members, delete network?
 Check that chests and signs are still there every day?
-cant put another network sign on the other side of a doublechest already in a newtwork?
 console can add network
-message when remove network
 remove owner ids from config file if they have 0 networks //
 fix when sign is destroyed by moving the block behind it
+max networks per person settings
 
 error when trying to add item to group right after creating the group (fixed?)
 

@@ -30,35 +30,121 @@ public class NetworkData {
 		this.plugin = plugin;
 	}
 
-	public void setup() {
-		if (!plugin.getDataFolder().exists()) {
-			plugin.getDataFolder().mkdir();
+	public void addNetwork(String networkName, Network network) {
+		networks.put(networkName, network);
+	}
+
+	public boolean checkAndRemoveChest(Block brokenBlock, Player player) {
+		Block chestBlock;
+		boolean blockIsChest;
+		if (brokenBlock.getType() == Material.WALL_SIGN) {
+			chestBlock = brokenBlock.getLocation().add(0, -1, 0).getBlock();
+			blockIsChest = false;
+		} else {
+			chestBlock = brokenBlock;
+			blockIsChest = true;
 		}
 
-		networksFile = new File(plugin.getDataFolder(), "networks.yml");
+		// If broken block is a chest
+		for (String netName : networks.keySet()) { // For each network
+			Network network = networks.get(netName);
 
-		if (!networksFile.exists()) {
-			try {
-				networksFile.createNewFile();
-			} catch (IOException e) {
-				plugin.getServer().getLogger().info(ChatColor.RED + "Could not create networks.yml file");
+			for (int chestNum = 0; chestNum < network.sortChests.size(); chestNum++) { // For each sort chest in
+																						// network
+				if (network.sortChests.get(chestNum).block.equals(chestBlock)) {
+					if (!network.isOwner(player) && !network.isMember(player) && !player.isOp()) {
+						player.sendMessage(
+								ChatColor.RED + "Must be the owner or a member of this network to modify its chests");
+						return false;
+					}
+					network.sortChests.remove(chestNum);
+					if (blockIsChest) {
+						try {
+							Sign sign = (Sign) chestBlock.getLocation().add(0, 1, 0).getBlock().getState();
+							sign.setLine(0, "");
+							sign.setLine(1, "");
+							sign.setLine(2, "");
+							sign.setLine(3, "");
+							sign.update();
+						} catch (ClassCastException e) {
+							plugin.debugMessage("Sign missing when block removed");
+						}
+					}
+					removeSortChestFromNetwork(network, chestBlock);
+					return true;
+				}
 			}
 
+			if (network.depositChests.containsKey(chestBlock)) {
+				if (!network.isOwner(player) && !network.isMember(player) && !player.isOp()) {
+					player.sendMessage(
+							ChatColor.RED + "Must be the owner or a member of this network to modify its chests");
+					return false;
+				}
+				network.depositChests.remove(chestBlock);
+				if (blockIsChest) {
+					try {
+						Sign sign = (Sign) chestBlock.getLocation().add(0, 1, 0).getBlock().getState();
+						sign.setLine(0, "");
+						sign.setLine(1, "");
+						sign.setLine(2, "");
+						sign.setLine(3, "");
+						sign.update();
+					} catch (ClassCastException e) {
+						plugin.debugMessage("Sign missing when block removed");
+					}
+				}
+				removeDepositChestFromNetwork(network, chestBlock);
+				return true;
+			}
 		}
 
-		networksFileCongif = YamlConfiguration.loadConfiguration(networksFile);
+		return true;
 	}
 
-	public boolean networkExists(String networkName) {
-		if (networks.get(networkName) != null) {
-			return true;
+	public void createNewNetwork(Player player, String newNetworkName) {
+		Network newNetwork = new Network(player.getUniqueId(), newNetworkName, plugin);
+
+		networks.put(newNetworkName, newNetwork);
+		getNetworks().saveToString();
+		saveNetworkData();
+	}
+
+	public void disableAllChestsWithGroup(String groupName) {
+
+		for (Network network : networks.values()) {
+			ArrayList<SortChest> chestsToDelete = new ArrayList<SortChest>();
+			for (SortChest chest : network.sortChests) {
+				if (chest.group.equals(groupName)) {
+					Sign sign = (Sign) chest.sign.getState();
+					sign.setLine(3, ChatColor.RED + "(DISABLED)");
+					sign.update();
+					chestsToDelete.add(chest);
+				}
+			}
+			for (SortChest chest : chestsToDelete) {
+				network.sortChests.remove(chest);
+			}
+			saveNetwork(network, false);
 		}
 
-		return false;
+		saveNetworkData();
 	}
 
-	public FileConfiguration getNetworks() {
-		return networksFileCongif;
+	public NetworkItem getDepositChestBySign(Block signBlock, String networkName) {
+		Network network = networks.get(networkName);
+
+		if (network == null) {
+			return null;
+		}
+
+		for (NetworkItem chest : network.depositChests.values()) { // For each SortChest
+			if (chest.sign.getLocation().equals(signBlock.getLocation())) {
+				return chest;
+			}
+		}
+
+		return null;
 	}
 
 	public Network getDepositChestNetwork(Block chest) {
@@ -71,73 +157,34 @@ public class NetworkData {
 		return null;
 	}
 
-	public void saveNetwork(Network network, boolean saveToFile) {
-		UUID uuid = network.owner;
+	public Network getNetwork(String networkName) {
+		return networks.get(networkName);
+	}
 
-		String path = "Owners." + uuid + ".NetworkNames." + network.networkName;
+	public FileConfiguration getNetworks() {
+		return networksFileCongif;
+	}
 
-		// Members
-		ArrayList<String> UUIDStrings = new ArrayList<String>();
-		for (UUID member : network.members) {
-			UUIDStrings.add(member.toString());
+	public SortChest getSortChestByChestBlock(Block chestBlock) {
+		if (chestBlock.getLocation().clone().add(0, 1, 0).getBlock().getType() != Material.WALL_SIGN) {
+			return null;
 		}
-		if (UUIDStrings != null) {
-			getNetworks().set(path + ".Members", UUIDStrings);
+
+		Sign sign = (Sign) chestBlock.getLocation().clone().add(0, 1, 0).getBlock().getState();
+		String networkName = sign.getLine(0).substring(3);
+		Network network = getNetwork(networkName);
+
+		if (network == null) {
+			return null;
 		}
 
-		// SortChests
-		if (network.sortChests.isEmpty()) {
-			getNetworks().set(path + ".Chests", new ArrayList<String>());
-		} else {
-			for (SortChest sortChest : network.sortChests) {
-				// Chest
-				Block chestBlock = sortChest.block;
-				int chestBlockX = new BigDecimal(chestBlock.getLocation().getX()).intValue();
-				int chestBlockY = (int) chestBlock.getLocation().getY();
-				int chestBlockZ = new BigDecimal(chestBlock.getLocation().getZ()).intValue();
-
-				// Sign
-				Block signBlock = sortChest.sign;
-				int signX = new BigDecimal(signBlock.getLocation().getX()).intValue();
-				int signY = (int) signBlock.getLocation().getY();
-				int signZ = new BigDecimal(signBlock.getLocation().getZ()).intValue();
-
-				String group = sortChest.group;
-				int priority = sortChest.priority;
-
-				String chestPath = "Owners." + uuid + ".NetworkNames." + network.networkName + ".Chests."
-						+ chestBlock.getWorld().getName() + "," + chestBlockX + "," + chestBlockY + "," + chestBlockZ;
-
-				getNetworks().set(chestPath + ".Sign",
-						signBlock.getWorld().getName() + "," + signX + "," + signY + "," + signZ);
-				getNetworks().set(chestPath + ".SignText", group);
-				getNetworks().set(chestPath + ".Priority", priority);
+		for (SortChest chest : network.sortChests) {
+			if (chest.block.equals(chestBlock)) {
+				return chest;
 			}
 		}
 
-		// Deposit Chests
-		if (network.depositChests.isEmpty()) {
-			getNetworks().set(path + ".DepositChests", new ArrayList<String>());
-		} else {
-			for (Map.Entry<Block, NetworkItem> depositChest : network.depositChests.entrySet()) {
-				Block chest = depositChest.getValue().chest;
-				Block sign = depositChest.getValue().sign;
-				int x = new BigDecimal(chest.getLocation().getX()).intValue();
-				int z = new BigDecimal(chest.getLocation().getZ()).intValue();
-				int signX = new BigDecimal(sign.getLocation().getX()).intValue();
-				int signZ = new BigDecimal(sign.getLocation().getZ()).intValue();
-
-				String chestPath = path + ".DepositChests." + chest.getWorld().getName() + "," + x + ","
-						+ (int) chest.getLocation().getY() + "," + z;
-				getNetworks().set(chestPath + ".Sign",
-						sign.getWorld().getName() + "," + signX + "," + (int) sign.getLocation().getY() + "," + signZ);
-			}
-		}
-
-		// remove later maybe?
-		if (saveToFile) {
-			saveNetworkData();
-		}
+		return null;
 	}
 
 	public SortChest getSortChestBySign(Block signBlock, String networkName) {
@@ -148,22 +195,6 @@ public class NetworkData {
 		}
 
 		for (SortChest chest : network.sortChests) { // For each SortChest
-			if (chest.sign.getLocation().equals(signBlock.getLocation())) {
-				return chest;
-			}
-		}
-
-		return null;
-	}
-
-	public NetworkItem getDepositChestBySign(Block signBlock, String networkName) {
-		Network network = networks.get(networkName);
-
-		if (network == null) {
-			return null;
-		}
-
-		for (NetworkItem chest : network.depositChests.values()) { // For each SortChest
 			if (chest.sign.getLocation().equals(signBlock.getLocation())) {
 				return chest;
 			}
@@ -198,26 +229,6 @@ public class NetworkData {
 		}
 
 		return null;
-	}
-
-	public void createNewNetwork(Player player, String newNetworkName) {
-		Network newNetwork = new Network(player.getUniqueId(), newNetworkName, plugin);
-
-		networks.put(newNetworkName, newNetwork);
-		getNetworks().saveToString();
-		saveNetworkData();
-	}
-
-	public void saveNetworkData() {
-		try {
-			networksFileCongif.save(networksFile);
-		} catch (IOException e) {
-			plugin.getServer().getLogger().info(ChatColor.RED + "Could not save networks.yml file");
-		}
-	}
-
-	public void reloadNetworks() {
-		networksFileCongif = YamlConfiguration.loadConfiguration(networksFile);
 	}
 
 	public void loadNetworkData() {
@@ -322,8 +333,12 @@ public class NetworkData {
 		}
 	}
 
-	public void addNetwork(String networkName, Network network) {
-		networks.put(networkName, network);
+	public boolean networkExists(String networkName) {
+		if (networks.get(networkName) != null) {
+			return true;
+		}
+
+		return false;
 	}
 
 //	public SortChest getSortChestByChestBlock(Block chestBlock) {
@@ -335,42 +350,8 @@ public class NetworkData {
 //		return null;
 //	}
 
-	public SortChest getSortChestByChestBlock(Block chestBlock) {
-		if (chestBlock.getLocation().clone().add(0, 1, 0).getBlock().getType() != Material.WALL_SIGN) {
-			return null;
-		}
-
-		Sign sign = (Sign) chestBlock.getLocation().clone().add(0, 1, 0).getBlock().getState();
-		String networkName = sign.getLine(0).substring(3);
-		Network network = getNetwork(networkName);
-
-		if (network == null) {
-			return null;
-		}
-
-		for (SortChest chest : network.sortChests) {
-			if (chest.block.equals(chestBlock)) {
-				return chest;
-			}
-		}
-
-		return null;
-	}
-
-	public Network getNetwork(String networkName) {
-		return networks.get(networkName);
-	}
-
-	public void removeSortChestFromNetwork(Network network, Block chestBlock) {
-		int x = new BigDecimal(chestBlock.getLocation().getX()).intValue();
-		int y = (int) chestBlock.getLocation().getY();
-		int z = new BigDecimal(chestBlock.getLocation().getZ()).intValue();
-
-		String chestName = chestBlock.getWorld().getName() + "," + x + "," + y + "," + z;
-
-		getNetworks().set("Owners." + network.owner + ".NetworkNames." + network.networkName + ".Chests." + chestName,
-				null);
-		saveNetwork(network, true);
+	public void reloadNetworks() {
+		networksFileCongif = YamlConfiguration.loadConfiguration(networksFile);
 	}
 
 	public void removeDepositChestFromNetwork(Network network, Block chestBlock) {
@@ -385,98 +366,127 @@ public class NetworkData {
 		saveNetwork(network, true);
 	}
 
-	public void disableAllChestsWithGroup(String groupName) {
-
-		for (Network network : networks.values()) {
-			ArrayList<SortChest> chestsToDelete = new ArrayList<SortChest>();
-			for (SortChest chest : network.sortChests) {
-				if (chest.group.equals(groupName)) {
-					Sign sign = (Sign) chest.sign.getState();
-					sign.setLine(3, ChatColor.RED + "(DISABLED)");
-					sign.update();
-					chestsToDelete.add(chest);
-				}
-			}
-			for (SortChest chest : chestsToDelete) {
-				network.sortChests.remove(chest);
-			}
-			saveNetwork(network, false);
-		}
-
-		saveNetworkData();
-	}
-
-	public boolean checkAndRemoveChest(Block brokenBlock, Player player) {
-		Block chestBlock;
-		boolean blockIsChest;
-		if (brokenBlock.getType() == Material.WALL_SIGN) {
-			chestBlock = brokenBlock.getLocation().add(0, -1, 0).getBlock();
-			blockIsChest = false;
-		} else {
-			chestBlock = brokenBlock;
-			blockIsChest = true;
-		}
-
-		// If broken block is a chest
-		for (String netName : networks.keySet()) { // For each network
-			Network network = networks.get(netName);
-
-			for (int chestNum = 0; chestNum < network.sortChests.size(); chestNum++) { // For each sort chest in
-																						// network
-				if (network.sortChests.get(chestNum).block.equals(chestBlock)) {
-					if (!network.isOwner(player) && !network.isMember(player) && !player.isOp()) {
-						player.sendMessage(
-								ChatColor.RED + "Must be the owner or a member of this network to modify its chests");
-						return false;
-					}
-					network.sortChests.remove(chestNum);
-					if (blockIsChest) {
-						try {
-							Sign sign = (Sign) chestBlock.getLocation().add(0, 1, 0).getBlock().getState();
-							sign.setLine(0, "");
-							sign.setLine(1, "");
-							sign.setLine(2, "");
-							sign.setLine(3, "");
-							sign.update();
-						} catch (ClassCastException e) {
-							plugin.debugMessage("Sign missing when block removed");
-						}
-					}
-					removeSortChestFromNetwork(network, chestBlock);
-					return true;
-				}
-			}
-
-			if (network.depositChests.containsKey(chestBlock)) {
-				if (!network.isOwner(player) && !network.isMember(player) && !player.isOp()) {
-					player.sendMessage(
-							ChatColor.RED + "Must be the owner or a member of this network to modify its chests");
-					return false;
-				}
-				network.depositChests.remove(chestBlock);
-				if (blockIsChest) {
-					try {
-						Sign sign = (Sign) chestBlock.getLocation().add(0, 1, 0).getBlock().getState();
-						sign.setLine(0, "");
-						sign.setLine(1, "");
-						sign.setLine(2, "");
-						sign.setLine(3, "");
-						sign.update();
-					} catch (ClassCastException e) {
-						plugin.debugMessage("Sign missing when block removed");
-					}
-				}
-				removeDepositChestFromNetwork(network, chestBlock);
-				return true;
-			}
-		}
-
-		return true;
-	}
-
 	public void removeNetwork(Network network) {
 		getNetworks().set("Owners." + network.owner + ".NetworkNames." + network.networkName, null);
 		networks.remove(network.networkName);
 		saveNetworkData();
+	}
+
+	public void removeSortChestFromNetwork(Network network, Block chestBlock) {
+		int x = new BigDecimal(chestBlock.getLocation().getX()).intValue();
+		int y = (int) chestBlock.getLocation().getY();
+		int z = new BigDecimal(chestBlock.getLocation().getZ()).intValue();
+
+		String chestName = chestBlock.getWorld().getName() + "," + x + "," + y + "," + z;
+
+		getNetworks().set("Owners." + network.owner + ".NetworkNames." + network.networkName + ".Chests." + chestName,
+				null);
+		saveNetwork(network, true);
+	}
+
+	public void saveNetwork(Network network, boolean saveToFile) {
+		UUID uuid = network.owner;
+
+		String path = "Owners." + uuid + ".NetworkNames." + network.networkName;
+
+		// Members
+		ArrayList<String> UUIDStrings = new ArrayList<String>();
+		for (UUID member : network.members) {
+			UUIDStrings.add(member.toString());
+		}
+		if (UUIDStrings != null) {
+			getNetworks().set(path + ".Members", UUIDStrings);
+		}
+
+		// SortChests
+		if (network.sortChests.isEmpty()) {
+			getNetworks().set(path + ".Chests", new ArrayList<String>());
+		} else {
+			for (SortChest sortChest : network.sortChests) {
+				// Chest
+				Block chestBlock = sortChest.block;
+				int chestBlockX = new BigDecimal(chestBlock.getLocation().getX()).intValue();
+				int chestBlockY = (int) chestBlock.getLocation().getY();
+				int chestBlockZ = new BigDecimal(chestBlock.getLocation().getZ()).intValue();
+
+				// Sign
+				Block signBlock = sortChest.sign;
+				int signX = new BigDecimal(signBlock.getLocation().getX()).intValue();
+				int signY = (int) signBlock.getLocation().getY();
+				int signZ = new BigDecimal(signBlock.getLocation().getZ()).intValue();
+
+				String group = sortChest.group;
+				int priority = sortChest.priority;
+
+				String chestPath = "Owners." + uuid + ".NetworkNames." + network.networkName + ".Chests."
+						+ chestBlock.getWorld().getName() + "," + chestBlockX + "," + chestBlockY + "," + chestBlockZ;
+
+				getNetworks().set(chestPath + ".Sign",
+						signBlock.getWorld().getName() + "," + signX + "," + signY + "," + signZ);
+				getNetworks().set(chestPath + ".SignText", group);
+				getNetworks().set(chestPath + ".Priority", priority);
+			}
+		}
+
+		// Deposit Chests
+		if (network.depositChests.isEmpty()) {
+			getNetworks().set(path + ".DepositChests", new ArrayList<String>());
+		} else {
+			for (Map.Entry<Block, NetworkItem> depositChest : network.depositChests.entrySet()) {
+				Block chest = depositChest.getValue().chest;
+				Block sign = depositChest.getValue().sign;
+				int x = new BigDecimal(chest.getLocation().getX()).intValue();
+				int z = new BigDecimal(chest.getLocation().getZ()).intValue();
+				int signX = new BigDecimal(sign.getLocation().getX()).intValue();
+				int signZ = new BigDecimal(sign.getLocation().getZ()).intValue();
+
+				String chestPath = path + ".DepositChests." + chest.getWorld().getName() + "," + x + ","
+						+ (int) chest.getLocation().getY() + "," + z;
+				getNetworks().set(chestPath + ".Sign",
+						sign.getWorld().getName() + "," + signX + "," + (int) sign.getLocation().getY() + "," + signZ);
+			}
+		}
+
+		// remove later maybe?
+		if (saveToFile) {
+//			if(network.members.isEmpty() && network.sortChests.isEmpty() && )
+
+			saveNetworkData();
+		}
+	}
+
+	public void saveNetworkData() {
+		Set<String> owners = networksFileCongif.getConfigurationSection("Owners").getKeys(false);
+		for (String owner : owners) {
+			if (networksFileCongif.getConfigurationSection("Owners." + owner + ".NetworkNames").getKeys(false)
+					.isEmpty()) {
+				networksFileCongif.set("Owners." + owner, null);
+			}
+		}
+
+		try {
+			networksFileCongif.save(networksFile);
+		} catch (IOException e) {
+			plugin.getServer().getLogger().info(ChatColor.RED + "Could not save networks.yml file");
+		}
+	}
+
+	public void setup() {
+		if (!plugin.getDataFolder().exists()) {
+			plugin.getDataFolder().mkdir();
+		}
+
+		networksFile = new File(plugin.getDataFolder(), "networks.yml");
+
+		if (!networksFile.exists()) {
+			try {
+				networksFile.createNewFile();
+			} catch (IOException e) {
+				plugin.getServer().getLogger().info(ChatColor.RED + "Could not create networks.yml file");
+			}
+
+		}
+
+		networksFileCongif = YamlConfiguration.loadConfiguration(networksFile);
 	}
 }
