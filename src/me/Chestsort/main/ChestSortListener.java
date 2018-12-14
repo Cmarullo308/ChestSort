@@ -195,7 +195,12 @@ public class ChestSortListener implements Listener {
 	@EventHandler
 	public void onInventoryClickEvent(InventoryClickEvent event) {
 		if (event.getInventory().getType() == InventoryType.CHEST) {
-			Block inventoryBlock = event.getInventory().getLocation().getBlock();
+			Block inventoryBlock;
+			try {
+				inventoryBlock = event.getInventory().getLocation().getBlock();
+			} catch (Exception e) {
+				return;
+			}
 
 			Thread autoSortThread = new Thread() {
 				@Override
@@ -253,9 +258,11 @@ public class ChestSortListener implements Listener {
 		switch (brokenBlock.getType()) {
 		case CHEST:
 		case WALL_SIGN:
-			if (!networkData.checkAndRemoveChest(brokenBlock, event.getPlayer())) {
+			// -1 no permission, 0 not found, 1 for done
+			int result = networkData.checkAndRemoveChest(brokenBlock, event.getPlayer());
+			if (result == -1) {
 				event.setCancelled(true);
-			} else {
+			} else if (result == 1) {
 				event.getPlayer().sendMessage(ChatColor.GREEN + "Network chest disabled");
 			}
 			break;

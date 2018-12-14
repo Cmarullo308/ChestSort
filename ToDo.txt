@@ -1,7 +1,6 @@
 Can't edit sign?
 Check that chests and signs are still there every day?
 console can add network
-remove owner ids from config file if they have 0 networks //
 fix when sign is destroyed by moving the block behind it
 max networks per person settings
 

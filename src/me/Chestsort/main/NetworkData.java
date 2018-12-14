@@ -34,7 +34,7 @@ public class NetworkData {
 		networks.put(networkName, network);
 	}
 
-	public boolean checkAndRemoveChest(Block brokenBlock, Player player) {
+	public int checkAndRemoveChest(Block brokenBlock, Player player) {
 		Block chestBlock;
 		boolean blockIsChest;
 		if (brokenBlock.getType() == Material.WALL_SIGN) {
@@ -55,7 +55,7 @@ public class NetworkData {
 					if (!network.isOwner(player) && !network.isMember(player) && !player.isOp()) {
 						player.sendMessage(
 								ChatColor.RED + "Must be the owner or a member of this network to modify its chests");
-						return false;
+						return -1;
 					}
 					network.sortChests.remove(chestNum);
 					if (blockIsChest) {
@@ -71,7 +71,7 @@ public class NetworkData {
 						}
 					}
 					removeSortChestFromNetwork(network, chestBlock);
-					return true;
+					return 1;
 				}
 			}
 
@@ -79,7 +79,7 @@ public class NetworkData {
 				if (!network.isOwner(player) && !network.isMember(player) && !player.isOp()) {
 					player.sendMessage(
 							ChatColor.RED + "Must be the owner or a member of this network to modify its chests");
-					return false;
+					return -1;
 				}
 				network.depositChests.remove(chestBlock);
 				if (blockIsChest) {
@@ -95,11 +95,11 @@ public class NetworkData {
 					}
 				}
 				removeDepositChestFromNetwork(network, chestBlock);
-				return true;
+				return 1;
 			}
 		}
 
-		return true;
+		return 0;
 	}
 
 	public void createNewNetwork(Player player, String newNetworkName) {
