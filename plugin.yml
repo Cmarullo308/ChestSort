@@ -1,8 +1,8 @@
 main: me.Chestsort.main.ChestSort
 name: ChestSort
 author: CJM
-version: 1.4
-api-version: 1.13
+version: 1.5
+api-version: 1.14
 description: Sort Chests by Type
 commands:
    ChestSort:

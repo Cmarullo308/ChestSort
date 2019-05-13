@@ -456,7 +456,9 @@ public class NetworkData {
 	}
 
 	public void saveNetworkData() {
+		plugin.debugMessage((networksFileCongif == null) + "MMMMMM");
 		Set<String> owners = networksFileCongif.getConfigurationSection("Owners").getKeys(false);
+
 		for (String owner : owners) {
 			if (networksFileCongif.getConfigurationSection("Owners." + owner + ".NetworkNames").getKeys(false)
 					.isEmpty()) {
@@ -488,5 +490,6 @@ public class NetworkData {
 		}
 
 		networksFileCongif = YamlConfiguration.loadConfiguration(networksFile);
+		plugin.debugMessage((networksFileCongif == null) + "LLLLLLLLLLL");
 	}
 }

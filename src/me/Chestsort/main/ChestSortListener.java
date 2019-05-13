@@ -81,6 +81,7 @@ public class ChestSortListener implements Listener {
 
 			player.sendMessage("Deposit chest created for network " + ChatColor.YELLOW + tempNetworkName);
 		}
+
 		// Sort Chest
 		else if (e.getLine(0).startsWith("*") && e.getLine(0).length() > 1) {
 			if (!networkData.networkExists(tempNetworkName)) {
@@ -202,15 +203,25 @@ public class ChestSortListener implements Listener {
 				return;
 			}
 
-			Thread autoSortThread = new Thread() {
-				@Override
-				public void run() {
-					Sorter.AutoSort(inventoryBlock, event.getInventory(), event.getWhoClicked(), plugin, networkData,
-							groupsData);
-				}
-			};
+			//Thread not working since 1.14
+			// ----------------
+//			Thread autoSortThread = new Thread() {
+//				@Override
+//				public void run() {
+//					Sorter.AutoSort(inventoryBlock, event.getInventory(), event.getWhoClicked(), plugin, networkData,
+//							groupsData);
+//				}
+//			};
+//
+//			autoSortThread.start();
+			// ----------------
+			Timer t = new Timer();
+			t.start();
+			Sorter.AutoSort(inventoryBlock, event.getInventory(), event.getWhoClicked(), plugin, networkData,
+					groupsData);
+			t.stop();
+			plugin.debugMessage(t.getTimeFormated());
 
-			autoSortThread.start();
 		}
 	}
 
@@ -241,14 +252,18 @@ public class ChestSortListener implements Listener {
 
 		Chest chest = (Chest) blockMovedTo.getState();
 
-		Thread autoSortThread = new Thread() {
-			@Override
-			public void run() {
-				Sorter.AutoSort(blockMovedTo, chest.getInventory(), null, plugin, networkData, groupsData);
-			}
-		};
-
-		autoSortThread.start();
+		//Thread doesn't work since 1.14-------------------
+//		Thread autoSortThread = new Thread() {
+//			@Override
+//			public void run() {
+//				Sorter.AutoSort(blockMovedTo, chest.getInventory(), null, plugin, networkData, groupsData);
+//			}
+//		};
+//
+//		autoSortThread.start();
+		//--------------------
+		
+		Sorter.AutoSort(blockMovedTo, chest.getInventory(), null, plugin, networkData, groupsData);
 	}
 
 	@EventHandler
