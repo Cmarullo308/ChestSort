@@ -215,12 +215,13 @@ public class ChestSortListener implements Listener {
 //
 //			autoSortThread.start();
 			// ----------------
-			Timer t = new Timer();
-			t.start();
+			
+//			Timer t = new Timer();
+//			t.start();
 			Sorter.AutoSort(inventoryBlock, event.getInventory(), event.getWhoClicked(), plugin, networkData,
 					groupsData);
-			t.stop();
-			plugin.debugMessage(t.getTimeFormated());
+//			t.stop();
+//			plugin.debugMessage(t.getTimeFormated());
 
 		}
 	}
