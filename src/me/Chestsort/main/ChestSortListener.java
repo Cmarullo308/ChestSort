@@ -144,15 +144,15 @@ public class ChestSortListener implements Listener {
 		Sign sign = null;
 
 		if (dir.getFacing() == BlockFace.EAST || dir.getFacing() == BlockFace.WEST) {
-			if (block.getLocation().clone().add(0, 0, 1).getBlock().getType() == Material.WALL_SIGN) {
+			if (isAWallSign(block.getLocation().clone().add(0, 0, 1).getBlock().getType())) {
 				sign = (Sign) block.getLocation().clone().add(0, 0, 1).getBlock().getState();
-			} else if (block.getLocation().clone().add(0, 0, -1).getBlock().getType() == Material.WALL_SIGN) {
+			} else if (isAWallSign(block.getLocation().clone().add(0, 0, -1).getBlock().getType())) {
 				sign = (Sign) block.getLocation().clone().add(0, 0, -1).getBlock().getState();
 			}
 		} else {
-			if (block.getLocation().clone().add(1, 0, 0).getBlock().getType() == Material.WALL_SIGN) {
+			if (isAWallSign(block.getLocation().clone().add(1, 0, 0).getBlock().getType())) {
 				sign = (Sign) block.getLocation().clone().add(1, 0, 0).getBlock().getState();
-			} else if (block.getLocation().clone().add(-1, 0, 0).getBlock().getType() == Material.WALL_SIGN) {
+			} else if (isAWallSign(block.getLocation().clone().add(-1, 0, 0).getBlock().getType())) {
 				sign = (Sign) block.getLocation().clone().add(-1, 0, 0).getBlock().getState();
 			}
 		}
@@ -193,6 +193,25 @@ public class ChestSortListener implements Listener {
 		return false;
 	}
 
+	private boolean isAWallSign(Material type) {
+		switch (type) {
+		case OAK_WALL_SIGN:
+			return true;
+		case ACACIA_WALL_SIGN:
+			return true;
+		case BIRCH_WALL_SIGN:
+			return true;
+		case DARK_OAK_WALL_SIGN:
+			return true;
+		case JUNGLE_WALL_SIGN:
+			return true;
+		case SPRUCE_WALL_SIGN:
+			return true;
+		default:
+			return false;
+		}
+	}
+
 	@EventHandler
 	public void onInventoryClickEvent(InventoryClickEvent event) {
 		if (event.getInventory().getType() == InventoryType.CHEST) {
@@ -203,7 +222,7 @@ public class ChestSortListener implements Listener {
 				return;
 			}
 
-			//Thread not working since 1.14
+			// Thread not working since 1.14
 			// ----------------
 //			Thread autoSortThread = new Thread() {
 //				@Override
@@ -215,7 +234,7 @@ public class ChestSortListener implements Listener {
 //
 //			autoSortThread.start();
 			// ----------------
-			
+
 //			Timer t = new Timer();
 //			t.start();
 			Sorter.AutoSort(inventoryBlock, event.getInventory(), event.getWhoClicked(), plugin, networkData,
@@ -253,7 +272,7 @@ public class ChestSortListener implements Listener {
 
 		Chest chest = (Chest) blockMovedTo.getState();
 
-		//Thread doesn't work since 1.14-------------------
+		// Thread doesn't work since 1.14-------------------
 //		Thread autoSortThread = new Thread() {
 //			@Override
 //			public void run() {
@@ -262,8 +281,8 @@ public class ChestSortListener implements Listener {
 //		};
 //
 //		autoSortThread.start();
-		//--------------------
-		
+		// --------------------
+
 		Sorter.AutoSort(blockMovedTo, chest.getInventory(), null, plugin, networkData, groupsData);
 	}
 
@@ -273,7 +292,12 @@ public class ChestSortListener implements Listener {
 
 		switch (brokenBlock.getType()) {
 		case CHEST:
-		case WALL_SIGN:
+		case OAK_WALL_SIGN:
+		case DARK_OAK_WALL_SIGN:
+		case SPRUCE_WALL_SIGN:
+		case JUNGLE_WALL_SIGN:
+		case ACACIA_WALL_SIGN:
+		case BIRCH_WALL_SIGN:
 			// -1 no permission, 0 not found, 1 for done
 			int result = networkData.checkAndRemoveChest(brokenBlock, event.getPlayer());
 			if (result == -1) {

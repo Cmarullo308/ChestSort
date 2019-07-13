@@ -44,6 +44,9 @@ public class CommandHandler {
 		case "groupof":
 			groupOfCommand(sender, args);
 			break;
+		case "listgroups":
+			listGroupNames(sender, args);
+			break;
 		case "sound":
 			soundCommands(sender, args);
 			break;
@@ -59,6 +62,43 @@ public class CommandHandler {
 		}
 
 		return true;
+	}
+
+	private void listGroupNames(CommandSender sender, String[] args) {
+		String message = "";
+		if (args.length == 2 && args[1].equalsIgnoreCase("all")) {
+			if (plugin.groupData.groups.keySet().size() == 0) {
+				sender.sendMessage("There are no groups");
+				return;
+			}
+
+			for (String groupName : plugin.groupData.groups.keySet()) {
+				message += ChatColor.GREEN + "" + groupName;
+				if (plugin.groupData.groups.get(groupName).size() == 0) {
+					message += ChatColor.WHITE + "[]" + "\n\n";
+				} else {
+					for (String item : plugin.groupData.groups.get(groupName)) {
+						message += "\n" + ChatColor.WHITE + "- " + item + "\n";
+					}
+				}
+			}
+
+			sender.sendMessage(message);
+		} else if (args.length == 1) {
+			if (plugin.groupData.groups.keySet().size() == 0) {
+				sender.sendMessage("There are no groups");
+				return;
+			}
+
+			message += "Groups:";
+			for (String groupName : plugin.groupData.groups.keySet()) {
+				message += "\n" + "- " + groupName;
+			}
+			sender.sendMessage(message);
+		} else {
+			sender.sendMessage(ChatColor.RED + "Invalid number of arguements");
+		}
+
 	}
 
 	private void helpMenu(CommandSender sender, String[] args) {
@@ -595,7 +635,7 @@ public class CommandHandler {
 
 		if (lookingAt.getType() == Material.CHEST) {
 			Block signBlock = lookingAt.getLocation().clone().add(0, 1, 0).getBlock();
-			if (signBlock.getType() == Material.WALL_SIGN) {
+			if (isAWallSign(signBlock.getType())) {
 				Sign sign = (Sign) signBlock.getState();
 				try {
 					sortChest = networkData.getSortChestBySign(signBlock, sign.getLine(0).substring(3));
@@ -603,8 +643,8 @@ public class CommandHandler {
 					sortChest = null;
 				}
 			}
-		} else if (lookingAt.getType() == Material.WALL_SIGN) {
-			if (lookingAt.getType() == Material.WALL_SIGN) {
+		} else if (isAWallSign(lookingAt.getType())) {
+			if (isAWallSign(lookingAt.getType())) {
 				Sign sign = (Sign) lookingAt.getState();
 				try {
 					sortChest = networkData.getSortChestBySign(lookingAt, sign.getLine(0).substring(3));
@@ -626,6 +666,20 @@ public class CommandHandler {
 		player.sendMessage(ChatColor.GREEN + "Priority: " + ChatColor.YELLOW + sortChest.priority);
 	}
 
+	private boolean isAWallSign(Material type) {
+		switch (type) {
+		case OAK_WALL_SIGN:
+		case DARK_OAK_WALL_SIGN:
+		case JUNGLE_WALL_SIGN:
+		case BIRCH_WALL_SIGN:
+		case ACACIA_WALL_SIGN:
+		case SPRUCE_WALL_SIGN:
+			return true;
+		default:
+			return false;
+		}
+	}
+
 	private void setPriority(CommandSender sender, String[] args) {
 		if (!sender.hasPermission("chestsort.priority.set")) {
 			noPermission(sender);
@@ -638,7 +692,7 @@ public class CommandHandler {
 
 		if (lookingAt.getType() == Material.CHEST) {
 			Block signBlock = lookingAt.getLocation().clone().add(0, 1, 0).getBlock();
-			if (signBlock.getType() == Material.WALL_SIGN) {
+			if (isAWallSign(signBlock.getType())) {
 				Sign sign = (Sign) signBlock.getState();
 				try {
 					sortChest = networkData.getSortChestBySign(signBlock, sign.getLine(0).substring(3));
@@ -646,8 +700,8 @@ public class CommandHandler {
 					sortChest = null;
 				}
 			}
-		} else if (lookingAt.getType() == Material.WALL_SIGN) {
-			if (lookingAt.getType() == Material.WALL_SIGN) {
+		} else if (isAWallSign(lookingAt.getType())) {
+			if (isAWallSign(lookingAt.getType())) {
 				Sign sign = (Sign) lookingAt.getState();
 				try {
 					sortChest = networkData.getSortChestBySign(lookingAt, sign.getLine(0).substring(3));

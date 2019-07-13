@@ -52,17 +52,18 @@ public class ChestSort extends JavaPlugin {
 	private void createHelpMenuMessage() {
 		helpMenuMessage = ChatColor.BOLD + "Commands\n";
 
-		helpMenuMessage += ChatColor.GRAY + "  /sortchest network <networkName> <remove | create | info>\n";
-		helpMenuMessage += ChatColor.WHITE + "  /sortchest priority set <number>\n";
-		helpMenuMessage += ChatColor.GRAY + "  /sortchest priority get\n";
 		helpMenuMessage += ChatColor.WHITE
-				+ "  /sortchest network <networkName> <members> <add | remove> <playerName>\n";
-		helpMenuMessage += ChatColor.GRAY + "  /sortchest network list\n";
-		helpMenuMessage += ChatColor.WHITE + "  /sortchest sound <whichSound> <set | get | enable | disable> [sound]\n";
-		helpMenuMessage += ChatColor.GRAY + "  /sortchest sound list\n";
-		helpMenuMessage += ChatColor.WHITE
-				+ "  /sortchest group <groupname> <additem | removeitem | create | remove | list> <item>\n";
-		helpMenuMessage += ChatColor.GRAY + "  /sc groupof <itemName>\n";
+				+ "  /chestsort group <groupname> <additem | removeitem | create | remove | list> <item>\n";
+		helpMenuMessage += ChatColor.GRAY + "  /chestsort groupof <itemName>\n";
+		helpMenuMessage += ChatColor.WHITE + " /chestsort listgroups <all>\n";
+		helpMenuMessage += ChatColor.GRAY + "  /chestsort network <networkName> <remove | create | info>\n";
+		helpMenuMessage += ChatColor.WHITE + "  /chestsort network list\n";
+		helpMenuMessage += ChatColor.GRAY
+				+ "  /chestsort network <networkName> <members> <add | remove> <playerName>\n";
+		helpMenuMessage += ChatColor.WHITE + "  /chestsort priority get\n";
+		helpMenuMessage += ChatColor.GRAY + "  /chestsort priority set <number>\n";
+		helpMenuMessage += ChatColor.WHITE + "  /chestsort sound list\n";
+		helpMenuMessage += ChatColor.GRAY + "  /chestsort sound <whichSound> <set | get | enable | disable> [sound]\n";
 	}
 
 	private void loadAndCheckConfigData() {

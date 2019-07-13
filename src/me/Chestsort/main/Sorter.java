@@ -151,13 +151,27 @@ public class Sorter {
 		return fromBlock;
 	}
 
+	private static boolean isAWallSign(Material type) {
+		switch (type) {
+		case OAK_WALL_SIGN:
+		case DARK_OAK_WALL_SIGN:
+		case JUNGLE_WALL_SIGN:
+		case BIRCH_WALL_SIGN:
+		case ACACIA_WALL_SIGN:
+		case SPRUCE_WALL_SIGN:
+			return true;
+		default:
+			return false;
+		}
+	}
+
 	private static boolean checkSigns(Location loc, BlockFace facing, NetworkData networkData, ChestSort plugin) {
-		if (loc.clone().add(0, 1, 0).getBlock().getType() != Material.WALL_SIGN) {
+		if (!isAWallSign(loc.clone().add(0, 1, 0).getBlock().getType())) {
 			return true;
 		}
 
 		if (facing == BlockFace.EAST || facing == BlockFace.WEST) {
-			if (loc.clone().add(0, 1, 1).getBlock().getType() == Material.WALL_SIGN) {
+			if (isAWallSign(loc.clone().add(0, 1, 1).getBlock().getType())) {
 				Sign sign = (Sign) loc.clone().add(0, 1, 1).getBlock().getState();
 				plugin.debugMessage(sign.getLine(0));
 				if (sign.getLine(0).contains("*")
@@ -167,7 +181,7 @@ public class Sorter {
 				}
 			}
 		} else {
-			if (loc.clone().add(1, 1, 0).getBlock().getType() == Material.WALL_SIGN) {
+			if (isAWallSign(loc.clone().add(1, 1, 0).getBlock().getType())) {
 				Sign sign = (Sign) loc.clone().add(1, 1, 0).getBlock().getState();
 				if (sign.getLine(0).contains("*")
 						&& networkData.networkExists(sign.getLine(0).substring(sign.getLine(0).indexOf("*") + 1))) {

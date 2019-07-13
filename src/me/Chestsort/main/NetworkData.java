@@ -34,10 +34,24 @@ public class NetworkData {
 		networks.put(networkName, network);
 	}
 
+	private boolean isAWallSign(Material type) {
+		switch (type) {
+		case OAK_WALL_SIGN:
+		case DARK_OAK_WALL_SIGN:
+		case JUNGLE_WALL_SIGN:
+		case BIRCH_WALL_SIGN:
+		case ACACIA_WALL_SIGN:
+		case SPRUCE_WALL_SIGN:
+			return true;
+		default:
+			return false;
+		}
+	}
+
 	public int checkAndRemoveChest(Block brokenBlock, Player player) {
 		Block chestBlock;
 		boolean blockIsChest;
-		if (brokenBlock.getType() == Material.WALL_SIGN) {
+		if (isAWallSign(brokenBlock.getType())) {
 			chestBlock = brokenBlock.getLocation().add(0, -1, 0).getBlock();
 			blockIsChest = false;
 		} else {
@@ -166,7 +180,7 @@ public class NetworkData {
 	}
 
 	public SortChest getSortChestByChestBlock(Block chestBlock) {
-		if (chestBlock.getLocation().clone().add(0, 1, 0).getBlock().getType() != Material.WALL_SIGN) {
+		if (!isAWallSign(chestBlock.getLocation().clone().add(0, 1, 0).getBlock().getType())) {
 			return null;
 		}
 
@@ -457,6 +471,7 @@ public class NetworkData {
 
 	public void saveNetworkData() {
 		plugin.debugMessage((networksFileCongif == null) + "MMMMMM");
+
 		Set<String> owners = networksFileCongif.getConfigurationSection("Owners").getKeys(false);
 
 		for (String owner : owners) {

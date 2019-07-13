@@ -137,7 +137,7 @@ public class ChestGroupsData {
 		if (!isValidGroup(groupName)) {
 			return -1;
 		}
-
+		
 		groups.get(groupName).add(item.toString());
 		saveGroup(groupName);
 		return 0;
