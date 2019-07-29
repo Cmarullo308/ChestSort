@@ -3,6 +3,9 @@ package me.Chestsort.main;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
@@ -77,6 +80,7 @@ public class CommandHandler {
 				if (plugin.groupData.groups.get(groupName).size() == 0) {
 					message += ChatColor.WHITE + "[]" + "\n\n";
 				} else {
+					Collections.sort(plugin.groupData.groups.get(groupName));
 					for (String item : plugin.groupData.groups.get(groupName)) {
 						message += "\n" + ChatColor.WHITE + "- " + item + "\n";
 					}
@@ -91,12 +95,18 @@ public class CommandHandler {
 			}
 
 			message += "Groups:";
-			for (String groupName : plugin.groupData.groups.keySet()) {
+			
+			List<String> list = new ArrayList<String>(plugin.groupData.groups.keySet());
+			Collections.sort(list);
+			
+			for (String groupName : list) {
 				message += "\n" + "- " + groupName;
 			}
 			sender.sendMessage(message);
-		} else {
+		} else if (args.length > 2) {
 			sender.sendMessage(ChatColor.RED + "Invalid number of arguements");
+		} else {
+			sender.sendMessage(ChatColor.RED + "Invalid arguements");
 		}
 
 	}
@@ -140,6 +150,11 @@ public class CommandHandler {
 	}
 
 	private void groupCommands(CommandSender sender, String[] args) {
+		if (args.length > 4 || args.length < 3) {
+			sender.sendMessage(ChatColor.RED + "Invalid number of arguements");
+			return;
+		}
+
 		String groupName = args[1];
 		String action = args[2];
 
@@ -163,9 +178,6 @@ public class CommandHandler {
 				sender.sendMessage(ChatColor.RED + "Invalid arguements");
 				return;
 			}
-		} else {
-			sender.sendMessage(ChatColor.RED + "Invalid number of arguements");
-			return;
 		}
 	}
 
