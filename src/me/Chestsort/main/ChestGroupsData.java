@@ -152,6 +152,7 @@ public class ChestGroupsData {
 		groups.put(groupName, newList);
 		saveGroup(groupName);
 
+		loadGroups(); //reload groups file
 		return true;
 	}
 

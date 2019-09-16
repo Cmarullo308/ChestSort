@@ -12,7 +12,7 @@ import net.md_5.bungee.api.ChatColor;
 
 public class ChestSort extends JavaPlugin {
 	boolean debugMessages = false;
-	boolean debug = true;
+	boolean debug = false;
 	NetworkData networkData = new NetworkData(this);
 	ChestGroupsData groupData = new ChestGroupsData(this);
 

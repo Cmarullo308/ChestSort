@@ -4,6 +4,4 @@ console can add network
 fix when sign is destroyed by moving the block behind it
 max networks per person settings
 
-error when trying to add item to group right after creating the group (fixed?)
-
 comparators

@@ -34,6 +34,11 @@ public class CommandHandler {
 
 	public boolean command(CommandSender sender, Command command, String label, String[] args) {
 
+		if (args.length == 0) {
+			helpMenu(sender, args);
+			return true;
+		}
+
 		switch (args[0].toLowerCase()) {
 		case "network":
 			networkCommands(sender, args);
@@ -95,10 +100,10 @@ public class CommandHandler {
 			}
 
 			message += "Groups:";
-			
+
 			List<String> list = new ArrayList<String>(plugin.groupData.groups.keySet());
 			Collections.sort(list);
-			
+
 			for (String groupName : list) {
 				message += "\n" + "- " + groupName;
 			}
