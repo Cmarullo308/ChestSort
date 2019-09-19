@@ -15,7 +15,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.sun.webkit.plugin.Plugin;
 
 public class Sorter {
 	public static void AutoSort(Block fromBlock, Inventory inventory, HumanEntity whoClicked, ChestSort plugin,

@@ -121,6 +121,7 @@ public class NetworkData {
 
 		networks.put(newNetworkName, newNetwork);
 		getNetworks().saveToString();
+		saveNetwork(networks.get(newNetwork.networkName), true); //1.8 Fix
 		saveNetworkData();
 	}
 
@@ -399,6 +400,8 @@ public class NetworkData {
 	}
 
 	public void saveNetwork(Network network, boolean saveToFile) {
+		plugin.debugMessage("jjjj\n\n\n\n\n\n\n\n\n");
+		
 		UUID uuid = network.owner;
 
 		String path = "Owners." + uuid + ".NetworkNames." + network.networkName;
@@ -432,6 +435,7 @@ public class NetworkData {
 				String group = sortChest.group;
 				int priority = sortChest.priority;
 
+				plugin.debugMessage("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n\n");
 				String chestPath = "Owners." + uuid + ".NetworkNames." + network.networkName + ".Chests."
 						+ chestBlock.getWorld().getName() + "," + chestBlockX + "," + chestBlockY + "," + chestBlockZ;
 
@@ -505,6 +509,5 @@ public class NetworkData {
 		}
 
 		networksFileCongif = YamlConfiguration.loadConfiguration(networksFile);
-		plugin.debugMessage((networksFileCongif == null) + "LLLLLLLLLLL");
 	}
 }

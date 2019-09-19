@@ -1,6 +1,7 @@
 package me.Chestsort.main;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -53,9 +54,9 @@ public class ChestSort extends JavaPlugin {
 		helpMenuMessage = ChatColor.BOLD + "Commands\n";
 
 		helpMenuMessage += ChatColor.WHITE
-				+ "  /chestsort group <groupname> <additem | removeitem | create | remove | list> <item>\n";
+				+ "  /chestsort group <groupname> <additem | removeitem | create | remove | list> [item]\n";
 		helpMenuMessage += ChatColor.GRAY + "  /chestsort groupof <itemName>\n";
-		helpMenuMessage += ChatColor.WHITE + " /chestsort listgroups <all>\n";
+		helpMenuMessage += ChatColor.WHITE + " /chestsort listgroups [all]\n";
 		helpMenuMessage += ChatColor.GRAY + "  /chestsort network <networkName> <remove | create | info>\n";
 		helpMenuMessage += ChatColor.WHITE + "  /chestsort network list\n";
 		helpMenuMessage += ChatColor.GRAY
@@ -63,7 +64,8 @@ public class ChestSort extends JavaPlugin {
 		helpMenuMessage += ChatColor.WHITE + "  /chestsort priority get\n";
 		helpMenuMessage += ChatColor.GRAY + "  /chestsort priority set <number>\n";
 		helpMenuMessage += ChatColor.WHITE + "  /chestsort sound list\n";
-		helpMenuMessage += ChatColor.GRAY + "  /chestsort sound <whichSound> <set | get | enable | disable> [sound]\n";
+		helpMenuMessage += ChatColor.GRAY
+				+ "  /chestsort sound <sound name> <set | get | enable | disable> [sound]\n";
 	}
 
 	private void loadAndCheckConfigData() {
@@ -119,6 +121,11 @@ public class ChestSort extends JavaPlugin {
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		commandHandler.command(sender, command, label, args);
 		return true;
+	}
+
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		return commandHandler.onTabComplete(sender, command, label, args);
 	}
 
 	@Override

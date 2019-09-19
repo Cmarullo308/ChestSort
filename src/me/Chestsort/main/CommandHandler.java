@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
@@ -847,6 +846,258 @@ public class CommandHandler {
 		for (SortChest chest : networkData.networks.get(args[1]).sortChests) {
 			plugin.debugMessage(chest.group);
 		}
+	}
+
+	public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		if (command.getName().equalsIgnoreCase("ChestSort")) {
+
+			if (args.length < 2) {
+				ArrayList<String> options = new ArrayList<String>();
+
+				if ("network".startsWith(args[0].toLowerCase())) {
+					options.add("network");
+				}
+
+				if ("priority".startsWith(args[0].toLowerCase())) {
+					options.add("priority");
+				}
+
+				if ("group".startsWith(args[0].toLowerCase())) {
+					options.add("group");
+				}
+
+				if ("groupof".startsWith(args[0].toLowerCase())) {
+					options.add("groupof");
+				}
+
+				if ("listgroups".startsWith(args[0].toLowerCase())) {
+					options.add("listgroups");
+				}
+
+				if ("sound".startsWith(args[0].toLowerCase())) {
+					options.add("sound");
+				}
+
+				if ("help".startsWith(args[0].toLowerCase())) {
+					options.add("help");
+				}
+
+				return options;
+			} else {
+				switch (args[0].toLowerCase()) {
+				case "network":
+					return getNetowrkTabs(args);
+				case "priority":
+					return getPriorityTabs(args);
+				case "group":
+					return getGroupTabs(args);
+				case "groupof":
+					return getGroupOfTabs(args);
+				case "listgroups":
+					return getListGroupsTabs(args);
+				case "sound":
+					return getSoundTabs(args);
+				default:
+					break;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private List<String> getSoundTabs(String[] args) {
+		ArrayList<String> options = new ArrayList<String>();
+
+		if (args.length == 2) {
+			if ("not_enough_space_sound".startsWith(args[1].toLowerCase())) {
+				options.add("not_enough_space_sound");
+			}
+
+			if ("sort_sound".startsWith(args[1].toLowerCase())) {
+				options.add("sort_sound");
+			}
+		} else if (args.length == 3) {
+			if ("set".startsWith(args[2].toLowerCase())) {
+				options.add("set");
+			}
+
+			if ("get".startsWith(args[2].toLowerCase())) {
+				options.add("get");
+			}
+
+			if ("enable".startsWith(args[2].toLowerCase())) {
+				options.add("enable");
+			}
+
+			if ("disable".startsWith(args[2].toLowerCase())) {
+				options.add("disable");
+			}
+		} else if (args.length == 4) {
+			if (args[2].equalsIgnoreCase("set")) {
+				if (!args[3].equals("")) {
+					for (Sound sound : Sound.values()) {
+						if (sound.name().toLowerCase().startsWith(args[3].toLowerCase())) {
+							options.add(sound.toString());
+						}
+					}
+				} else {
+					for (Sound sound : Sound.values()) {
+						options.add(sound.toString());
+					}
+				}
+			}
+		}
+
+		return options;
+	}
+
+	private List<String> getListGroupsTabs(String[] args) {
+		ArrayList<String> options = new ArrayList<String>();
+
+		if (args.length == 2) {
+			options.add("all");
+		}
+
+		return options;
+	}
+
+	private List<String> getGroupOfTabs(String[] args) {
+		ArrayList<String> options = new ArrayList<String>();
+
+		if (!args[1].equals("")) {
+			for (Material material : Material.values()) {
+				if (material.name().toLowerCase().startsWith(args[1].toLowerCase())) {
+					options.add(material.toString());
+				}
+			}
+		} else {
+			for (Material material : Material.values()) {
+				options.add(material.toString());
+			}
+		}
+
+		return options;
+	}
+
+	private List<String> getGroupTabs(String[] args) {
+		ArrayList<String> options = new ArrayList<String>();
+
+		if (args.length == 2) {
+			options.add("<Group Name>");
+		} else if (args.length == 3) {
+			if ("additem".startsWith(args[2].toLowerCase())) {
+				options.add("additem");
+			}
+
+			if ("removeitem".startsWith(args[2].toLowerCase())) {
+				options.add("removeitem");
+			}
+
+			if ("create".startsWith(args[2].toLowerCase())) {
+				options.add("create");
+			}
+
+			if ("remove".startsWith(args[2].toLowerCase())) {
+				options.add("remove");
+			}
+
+			if ("list".startsWith(args[2].toLowerCase())) {
+				options.add("list");
+			}
+		} else if (args.length == 4) {
+			if (args[2].equalsIgnoreCase("additem") || args[2].equalsIgnoreCase("removeitem")) {
+				if (!args[3].equals("")) {
+					for (Material material : Material.values()) {
+						if (material.name().toLowerCase().startsWith(args[3].toLowerCase())) {
+							options.add(material.toString());
+						}
+					}
+				} else {
+					for (Material material : Material.values()) {
+						options.add(material.toString());
+					}
+				}
+			}
+		}
+
+		return options;
+	}
+
+	private List<String> getPriorityTabs(String[] args) {
+		ArrayList<String> options = new ArrayList<String>();
+
+		if (args.length == 2 && args[1].length() == 0) { // Nothing typed yet
+			options.add("get");
+			options.add("set");
+		} else if (args.length == 2 && args[1].length() > 0) {
+			if ("get".startsWith(args[1].toLowerCase())) {
+				options.add("get");
+			}
+
+			if ("set".startsWith(args[1].toLowerCase())) {
+				options.add("set");
+			}
+		} else if (args.length == 3 && args[1].equalsIgnoreCase("set")) {
+			options.add("<number>");
+		}
+
+		return options;
+	}
+
+	private List<String> getNetowrkTabs(String[] args) {
+		ArrayList<String> options = new ArrayList<String>();
+
+		if (args.length == 2) {
+			if ("list".startsWith(args[1].toLowerCase())) {
+				options.add("list");
+			}
+
+			if ("".startsWith(args[1].toLowerCase())) {
+				options.add("<Network Name>");
+			}
+		} else if (args.length == 3 && !args[1].equalsIgnoreCase("list")) {
+			if ("remove".startsWith(args[2].toLowerCase())) {
+				options.add("remove");
+			}
+
+			if ("create".startsWith(args[2].toLowerCase())) {
+				options.add("create");
+			}
+
+			if ("members".startsWith(args[2].toLowerCase())) {
+				options.add("members");
+			}
+
+			if ("info".startsWith(args[2].toLowerCase())) {
+				options.add("info");
+			}
+		}
+		if (args.length == 4 && args[2].equalsIgnoreCase("members")) {
+			if ("add".startsWith(args[3].toLowerCase())) {
+				options.add("add");
+			}
+
+			if ("remove".startsWith(args[3].toLowerCase())) {
+				options.add("remove");
+			}
+		} else if (args.length == 5) {
+			if (args[3].equalsIgnoreCase("add") || args[3].equalsIgnoreCase("remove")) {
+				if (!args[4].equals("")) {
+					for (Player player : Bukkit.getOnlinePlayers()) {
+						if (player.getName().toLowerCase().startsWith(args[4].toLowerCase())) {
+							options.add(player.getName());
+						}
+					}
+				} else {
+					for (Player player : Bukkit.getOnlinePlayers()) {
+						options.add(player.getName());
+					}
+				}
+			}
+		}
+
+		return options;
 	}
 
 }
