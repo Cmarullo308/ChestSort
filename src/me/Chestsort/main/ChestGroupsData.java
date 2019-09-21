@@ -68,6 +68,8 @@ public class ChestGroupsData {
 	}
 
 	public void loadGroups() {
+		itemsInGroups = new ArrayList<String>(); // 1.8.1 fix
+
 		Set<String> groupNames;
 		try {
 			groupNames = groupsFileConfig.getConfigurationSection("Groups").getKeys(false);
@@ -78,6 +80,7 @@ public class ChestGroupsData {
 		for (String group : groupNames) { // For each group
 			if (!group.equalsIgnoreCase("Misc")) {
 				List<String> newMaterialList = groupsFileConfig.getStringList("Groups." + group);
+
 				for (int i = 0; i < newMaterialList.size(); i++) { // for each item in group
 					// Test if valid item
 					try {
@@ -137,7 +140,7 @@ public class ChestGroupsData {
 		if (!isValidGroup(groupName)) {
 			return -1;
 		}
-		
+
 		groups.get(groupName).add(item.toString());
 		saveGroup(groupName);
 		return 0;
@@ -152,7 +155,7 @@ public class ChestGroupsData {
 		groups.put(groupName, newList);
 		saveGroup(groupName);
 
-		loadGroups(); //reload groups file
+		loadGroups(); // reload groups file
 		return true;
 	}
 
