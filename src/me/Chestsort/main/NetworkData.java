@@ -399,9 +399,7 @@ public class NetworkData {
 		saveNetwork(network, true);
 	}
 
-	public void saveNetwork(Network network, boolean saveToFile) {
-		plugin.debugMessage("jjjj\n\n\n\n\n\n\n\n\n");
-		
+	public void saveNetwork(Network network, boolean saveToFile) {		
 		UUID uuid = network.owner;
 
 		String path = "Owners." + uuid + ".NetworkNames." + network.networkName;
@@ -435,7 +433,7 @@ public class NetworkData {
 				String group = sortChest.group;
 				int priority = sortChest.priority;
 
-				plugin.debugMessage("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n\n");
+//				plugin.debugMessage("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n\n");
 				String chestPath = "Owners." + uuid + ".NetworkNames." + network.networkName + ".Chests."
 						+ chestBlock.getWorld().getName() + "," + chestBlockX + "," + chestBlockY + "," + chestBlockZ;
 
@@ -474,7 +472,7 @@ public class NetworkData {
 	}
 
 	public void saveNetworkData() {
-		plugin.debugMessage((networksFileCongif == null) + "MMMMMM");
+//		plugin.debugMessage((networksFileCongif == null) + "MMMMMM");
 
 		Set<String> owners = networksFileCongif.getConfigurationSection("Owners").getKeys(false);
 

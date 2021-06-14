@@ -15,7 +15,6 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.Listener;
 
-import me.Chestsort.main.ChestSort;
 import net.md_5.bungee.api.ChatColor;
 
 public class ChestSortListener implements Listener {

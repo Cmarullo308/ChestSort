@@ -97,7 +97,7 @@ public class Network {
 		Sign sign;
 		for (NetworkItem chest : depositChests.values()) {
 			sign = (Sign) chest.sign.getState();
-			plugin.debugMessage(sign.getLine(0));
+//			plugin.debugMessage(sign.getLine(0));
 			sign.setLine(3, sign.getLine(3) + ChatColor.RED + "(DISABLED)");
 			sign.update();
 		}
